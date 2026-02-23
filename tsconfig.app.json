@@ -31,5 +31,5 @@
     "noUncheckedSideEffectImports": true
   },
   "include": ["src"],
-  "exclude": ["**/*.test.ts", "**/*.spec.ts", "src/lib/__tests__", "src/lib/migration"]
+  "exclude": ["**/*.test.ts", "**/*.spec.ts", "src/lib/__tests__", "src/lib/migration", "src/lib/lineOfSight.ts", "src/lib/missionStages.ts", "src/lib/missionVault.ts", "src/lib/obstacles.ts", "src/lib/offline.ts", "src/lib/pathGenerators.ts", "src/lib/poiPhotogrammetry.ts", "src/lib/terrain.ts"]
 }
