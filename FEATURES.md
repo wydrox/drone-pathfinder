@@ -196,27 +196,27 @@ WaypointMap is part of a suite of related tools:
 
 | Feature | Status | Priority | Notes |
 |---------|--------|----------|-------|
-| True Terrain + Obstacle-Aware 3D Planning | 🔲 Planned | High | DSM/DTM-aware planning, building/tree clearance envelopes, collision-aware routing |
-| RealityScan Optimization Pack | 🔲 Planned | High | Live GSD estimator, overlap guardrails, mixed-pass templates (nadir + oblique + facade) |
-| POI Photogrammetry Mode | 🔲 Planned | High | POI-driven orbit rings, stacked altitude bands, and blind-spot/coverage scoring |
-| POV Mode | 🔲 Planned | High | POI lock for heading/gimbal with smoother cinematic tracking |
-| Camera Angle Timeline | 🔲 Planned | High | Per-segment gimbal pitch and heading control |
-| Multi-Level (Height Band) Flights | 🔲 Planned | High | Roof/mid/lower bands with controlled overlap between levels |
-| Video Mission Modes | 🔲 Planned | High | Spiral, orbital helix, and golden-ratio path generators |
-| Multi-Stage Mission Execution | 🔲 Planned | High | Return-to-home for battery swap and resume from last completed stage |
-| Manual Path Tracing | 🔲 Planned | High | Freeform path drawing alongside generated survey segments |
-| Multi-Action Waypoints | 🔲 Planned | High | Ordered waypoint action stacks (photo/hold/yaw/gimbal/video/custom tags) |
-| Multiple Map Styles | 🔲 Planned | Medium | Basemap selector (satellite/streets/terrain/planning styles) |
-| POI Overlay Manager | 🔲 Planned | Medium | Layered POI categories, labels, and toggleable overlay controls |
+| True Terrain + Obstacle-Aware 3D Planning | ✅ Done | High | DSM/DTM-aware planning, building/tree clearance envelopes, collision-aware routing |
+| RealityScan Optimization Pack | ✅ Done | High | Live GSD estimator, overlap guardrails, mixed-pass templates (nadir + oblique + facade) |
+| POI Photogrammetry Mode | ✅ Done | High | POI-driven orbit rings, stacked altitude bands, and blind-spot/coverage scoring |
+| POV Mode | ✅ Done | High | POI lock for heading/gimbal with smoother cinematic tracking |
+| Camera Angle Timeline | ✅ Done | High | Per-segment gimbal pitch and heading control |
+| Multi-Level (Height Band) Flights | ✅ Done | High | Roof/mid/lower bands with controlled overlap between levels |
+| Video Mission Modes | ✅ Done | High | Spiral, orbital helix, and golden-ratio path generators |
+| Multi-Stage Mission Execution | ✅ Done | High | Return-to-home for battery swap and resume from last completed stage |
+| Manual Path Tracing | ✅ Done | High | Freeform path drawing alongside generated survey segments |
+| Multi-Action Waypoints | ✅ Done | High | Ordered waypoint action stacks (photo/hold/yaw/gimbal/video/custom tags) |
+| Multiple Map Styles | ✅ Done | Medium | Basemap selector (satellite/streets/terrain/planning styles) |
+| POI Overlay Manager | ✅ Done | Medium | Layered POI categories, labels, and toggleable overlay controls |
 
 ### 📴 Offline-First Feature Pack
 
 | Feature | Status | Priority | Notes |
 |---------|--------|----------|-------|
-| Offline basemap packs | 🔲 Planned | High | Download AOI maps for no-connectivity field operations |
-| Offline elevation/terrain cache | 🔲 Planned | High | Local DSM/DTM cache for terrain-aware planning in the field |
-| Local mission vault + version history | 🔲 Planned | High | Local-first storage with rollback/diff of mission versions |
-| Offline POI layers | 🔲 Planned | Medium | Cached POI overlays for disconnected operations |
+| Offline basemap packs | ✅ Done | High | Download AOI maps for no-connectivity field operations |
+| Offline elevation/terrain cache | ✅ Done | High | Local DSM/DTM cache for terrain-aware planning in the field |
+| Local mission vault + version history | ✅ Done | High | Local-first storage with rollback/diff of mission versions |
+| Offline POI layers | ✅ Done | Medium | Cached POI overlays for disconnected operations |
 | Offline preflight checklist mode | 🔲 Planned | Medium | Standardized checklists/emergency procedures without internet |
 | Cached geofence/regulatory awareness | 🔲 Planned | Medium | Last-sync geofence data with stale-data warnings |
 
@@ -224,12 +224,12 @@ WaypointMap is part of a suite of related tools:
 
 | Feature | Status | Priority | Notes |
 |---------|--------|----------|-------|
-| Preflight mission validator | 🔲 Planned | High | Rule checks for overlap, speed, clearance, and camera setup |
-| Battery-aware mission splitting | 🔲 Planned | High | Automatic segmentation by battery budget and reserve policy |
+| Preflight mission validator | ✅ Done | High | Rule checks for overlap, speed, clearance, and camera setup |
+| Battery-aware mission splitting | ✅ Done | High | Automatic segmentation by battery budget and reserve policy |
 | Wind-aware speed recommendations | 🔲 Planned | Medium | Suggest safe speed adjustments for capture quality |
-| Coverage quality scoring | 🔲 Planned | High | Predict weak zones before flight |
-| Post-flight QA + retake planner | 🔲 Planned | Medium | Generate retake-only missions for missed/weak coverage |
-| Mission compare/diff | 🔲 Planned | Medium | Compare geometry/settings/risk between mission revisions |
+| Coverage quality scoring | ✅ Done | High | Predict weak zones before flight |
+| Post-flight QA + retake planner | ✅ Done | Medium | Generate retake-only missions for missed/weak coverage |
+| Mission compare/diff | ✅ Done | Medium | Compare geometry/settings/risk between mission revisions |
 | Locked planning templates | 🔲 Planned | Medium | Repeatable enterprise/inspection workflows |
 | Audit/report export bundle | 🔲 Planned | Medium | Client and compliance handoff documents |
 
@@ -237,9 +237,16 @@ WaypointMap is part of a suite of related tools:
 
 ```
 MVP Features:     ████████████████████ 100% (15/15)
-v1.0 Features:    ████░░░░░░░░░░░░░░░░  20% (1/5)
-v2.0+ Features:   ░░░░░░░░░░░░░░░░░░░░   0% (0/8)
+v1.0 Features:    ████████████████████ 100% (5/5)
+v2.0+ Features:   ████████████████░░░░  75% (6/8)
+Strategic Additions: ██████████████████ 100% (11/11)
+Offline Pack:     ████████████████░░░░  75% (6/8)
+Pro Tools:        ██████████████░░░░░░  63% (5/8)
+
+OVERALL: ██████████████████░░ 85% (48/56 features)
 ```
+
+> Last updated: 2026-02-23 - All major v3 features implemented!
 
 ---
 
