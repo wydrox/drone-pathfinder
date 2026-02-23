@@ -71,17 +71,32 @@ export function Toolbar({ drawMode, setMode, onClear, waypointCount, map }: Prop
       borderBottom: '1px solid var(--border)',
       padding: '10px 16px',
     }}>
-      <span style={{
-        color: 'var(--text-primary)',
-        fontWeight: 700,
-        fontSize: 13,
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
         marginRight: 24,
-        fontFamily: 'var(--font-mono)',
-        letterSpacing: '0.02em',
         flexShrink: 0,
       }}>
-        DRONE PATHFINDER
-      </span>
+        <img 
+          src="/logo.svg" 
+          alt="Drone Pathfinder" 
+          style={{ 
+            height: 28, 
+            width: 'auto',
+            color: 'var(--text-primary)',
+          }} 
+        />
+        <span style={{
+          color: 'var(--text-primary)',
+          fontWeight: 700,
+          fontSize: 13,
+          fontFamily: 'var(--font-mono)',
+          letterSpacing: '0.02em',
+        }}>
+          DRONE PATHFINDER
+        </span>
+      </div>
 
       <div style={{ display: 'flex', gap: 0, flexShrink: 0 }}>
         <button

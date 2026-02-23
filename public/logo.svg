@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 140" width="100" height="140">
+  <!-- Map pin shape -->
+  <path d="M50 0 C22.4 0, 0 22.4, 0 50 C0 70, 15 90, 50 140 C85 90, 100 70, 100 50 C100 22.4, 77.6 0, 50 0 Z" fill="currentColor"/>
+  <!-- Command symbol (4 circles connected by lines forming a square in the middle) -->
+  <circle cx="35" cy="40" r="12" fill="white"/>
+  <circle cx="65" cy="40" r="12" fill="white"/>
+  <circle cx="35" cy="70" r="12" fill="white"/>
+  <circle cx="65" cy="70" r="12" fill="white"/>
+  <!-- Connecting lines -->
+  <rect x="35" y="36" width="30" height="8" fill="white"/>
+  <rect x="35" y="66" width="30" height="8" fill="white"/>
+  <rect x="31" y="40" width="8" height="30" fill="white"/>
+  <rect x="61" y="40" width="8" height="30" fill="white"/>
+  <!-- Center square -->
+  <rect x="43" y="48" width="14" height="14" fill="currentColor"/>
+  <!-- Inner circles (cutouts) -->
+  <circle cx="35" cy="40" r="4" fill="currentColor"/>
+  <circle cx="65" cy="40" r="4" fill="currentColor"/>
+  <circle cx="35" cy="70" r="4" fill="currentColor"/>
+  <circle cx="65" cy="70" r="4" fill="currentColor"/>
+</svg>
