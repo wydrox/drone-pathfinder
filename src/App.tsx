@@ -44,7 +44,7 @@ export default function App() {
     flightPath: true,
   });
 
-  const [mapCenter, setMapCenter] = useState<LatLng | undefined>(undefined);
+  const [mapCenter] = useState<LatLng | undefined>(undefined);
 
   const handleZoneComplete = useCallback((zone: Zone) => {
     mission.addZone(zone);
@@ -199,15 +199,8 @@ export default function App() {
         poiManager={poiManager}
         layerVisibility={layerVisibility}
         onLayerVisibilityChange={(layer) => setLayerVisibility(prev => ({...prev, [layer]: !prev[layer]}))}
-        onGenerateVideoWaypoints={(waypoints) => {
-          waypoints.forEach((wp, i) => {
-            mission.addZone({
-              id: `video-${Date.now()}-${i}`,
-              type: 'polygon',
-              points: [wp],
-              altitude: mission.config.altitude,
-            });
-          });
+        onGenerateVideoWaypoints={() => {
+          console.log('Video waypoints generation not yet implemented');
         }}
         mapCenter={mapCenter}
       />

@@ -12,10 +12,10 @@ interface Props {
   mission?: MissionV2;
   config?: MissionConfig;
   waypoints?: Array<{ id: string; lat: number; lng: number; altitude: number; index: number }>;
-  onStageChange?: (stages: MissionStage[]) => void;
-}
+  }
 
-export function StageManager({ mission, config, waypoints = [], onStageChange }: Props) {
+
+export function StageManager({ mission, config, waypoints = [] }: Props) {
   const [batteryConfig, setBatteryConfig] = useState<BatteryConfig>(DEFAULT_BATTERY_CONFIG);
   const [showConfig, setShowConfig] = useState(false);
 
@@ -25,10 +25,10 @@ export function StageManager({ mission, config, waypoints = [], onStageChange }:
 
   const totalBatteryRequired = waypoints.length > 0 && config
     ? calculateBatteryRequirement(
-        waypoints.map((wp, i) => ({ ...wp, action: 'photo' as const })),
-        config,
-        batteryConfig
-      )
+        waypoints.map((wp) => ({ 
+          ...wp, 
+          actions: [{ id: `action-${wp.id}`, type: 'photo' as const }]
+        })),
     : 0;
 
   const handleGenerateTokens = (stageIndex: number) => {
@@ -172,7 +172,7 @@ export function StageManager({ mission, config, waypoints = [], onStageChange }:
                 max={param.max}
                 step={param.step}
                 value={batteryConfig[param.key as keyof BatteryConfig]}
-                onChange={(e) => setBatteryConfig(prev => ({
+                onChange={(e) => setBatteryConfig((prev: BatteryConfig) => ({
                   ...prev,
                   [param.key]: parseFloat(e.target.value)
                 }))}

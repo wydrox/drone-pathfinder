@@ -19,7 +19,7 @@ export function VideoMissionPanel({ onGenerateWaypoints }: Props) {
 
   useEffect(() => {
     if (isSettingCenter) {
-      const handleMapClick = (e: MouseEvent) => {
+      const handleMapClick = (_e: MouseEvent) => {
         // This would be connected to map click events via props
         setIsSettingCenter(false);
       };

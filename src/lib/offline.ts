@@ -1,10 +1,24 @@
-import type { OfflinePack, CacheManifest } from '@/types/mission';
+import type { OfflinePack } from '@/types/mission';
+import type { LatLng } from '@/types/mission';
 
 export interface DownloadProgress {
   packId: string;
   downloaded: number;
   total: number;
   status: 'pending' | 'downloading' | 'complete' | 'error';
+}
+
+export async function cacheArea(center: LatLng, radiusMeters: number): Promise<void> {
+  console.log(`Caching area around ${center.lat}, ${center.lng} with radius ${radiusMeters}m`);
+  await new Promise(resolve => setTimeout(resolve, 1000));
+}
+
+export function getCachedAreas(): Array<{ center: LatLng; radius: number; timestamp: string }> {
+  return [];
+}
+
+export function clearCache(): void {
+  console.log('Clearing cache');
 }
 
 export async function downloadBasemapPack(
@@ -30,8 +44,8 @@ export async function downloadBasemapPack(
   for (let z = zoomRange[0]; z <= zoomRange[1]; z++) {
     const tiles = getTilesInBounds(bbox, z);
     
-    for (const tile of tiles) {
-      await downloadTile(tile);
+    for (const _tile of tiles) {
+      await downloadTile();
       downloaded++;
       
       if (onProgress && downloaded % 10 === 0) {
@@ -90,7 +104,7 @@ function latLngToTile(lat: number, lng: number, zoom: number): { x: number; y: n
   return { x, y };
 }
 
-async function downloadTile(tile: { x: number; y: number; z: number }): Promise<void> {
+async function downloadTile(): Promise<void> {
   await new Promise(resolve => setTimeout(resolve, 50));
 }
 
@@ -109,8 +123,4 @@ export async function cacheElevationData(
     type: 'elevation',
     status: 'complete',
   };
-}
-
-export function isDataStale(manifest: CacheManifest, maxAgeMs: number = 7 * 24 * 60 * 60 * 1000): boolean {
-  return Date.now() - manifest.downloadedAt > maxAgeMs;
 }

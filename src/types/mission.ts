@@ -67,6 +67,14 @@ export interface MissionStage {
   batteryRequiredPercent: number;
 }
 
+export interface BatteryConfig {
+  capacityMah: number;
+  voltage: number;
+  reservePercent: number;
+  hoverCurrentAmps: number;
+  cruiseCurrentAmps: number;
+}
+
 export type WaypointActionType = 'photo' | 'videoStart' | 'videoStop' | 'hover' | 'yaw' | 'gimbalPitch' | 'custom';
 
 export interface WaypointAction {
