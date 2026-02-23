@@ -100,16 +100,18 @@ export default function App() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
-        if (mission.zones.length > 0) {
-          mission.removeZone(mission.zones[mission.zones.length - 1].id);
-        }
+        mission.undo();
+      }
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        mission.redo();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [mission.zones, mission.removeZone]);
+  }, [mission.undo, mission.redo]);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -209,6 +211,10 @@ export default function App() {
           onClear={mission.clearAll}
           waypointCount={mission.waypoints.length}
           map={mapRef.current}
+          onUndo={mission.undo}
+          onRedo={mission.redo}
+          canUndo={mission.canUndo}
+          canRedo={mission.canRedo}
         />
         
         <div style={{

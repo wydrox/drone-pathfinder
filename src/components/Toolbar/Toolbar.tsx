@@ -8,6 +8,10 @@ interface Props {
   onClear: () => void;
   waypointCount: number;
   map: L.Map | null;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
 }
 
 interface SearchResult {
@@ -30,7 +34,7 @@ const btn = (active: boolean) => ({
   transition: 'all 0.1s',
 });
 
-export function Toolbar({ drawMode, setMode, onClear, waypointCount, map }: Props) {
+export function Toolbar({ drawMode, setMode, onClear, waypointCount, map, onUndo, onRedo, canUndo, canRedo }: Props) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [showSearch, setShowSearch] = useState(false);
@@ -136,6 +140,44 @@ export function Toolbar({ drawMode, setMode, onClear, waypointCount, map }: Prop
             Clear All
           </button>
         </>
+
+          {onUndo && onRedo && (
+            <>
+              <div style={{
+                width: 1,
+                height: 20,
+                background: 'var(--border)',
+                margin: '0 16px',
+                flexShrink: 0,
+              }} />
+              
+              <button
+                style={{
+                  ...btn(false),
+                  opacity: canUndo ? 1 : 0.4,
+                  cursor: canUndo ? 'pointer' : 'not-allowed',
+                  flexShrink: 0,
+                }}
+                onClick={onUndo}
+                disabled={!canUndo}
+              >
+                Undo [Ctrl+Z]
+              </button>
+              
+              <button
+                style={{
+                  ...btn(false),
+                  opacity: canRedo ? 1 : 0.4,
+                  cursor: canRedo ? 'pointer' : 'not-allowed',
+                  flexShrink: 0,
+                }}
+                onClick={onRedo}
+                disabled={!canRedo}
+              >
+                Redo [Ctrl+Y]
+              </button>
+            </>
+          )}
       )}
 
       <div style={{ flex: 1 }} />
