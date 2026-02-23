@@ -14,7 +14,7 @@ export function MapContainer({ mapRef, onMapReady }: Props) {
     if (!containerRef.current || mapRef.current) return;
 
     const map = L.map(containerRef.current, {
-      center: [51.505, -0.09],
+      center: [52.2297, 21.0122],
       zoom: 13,
       zoomControl: false,
     });

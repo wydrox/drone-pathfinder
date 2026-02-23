@@ -144,32 +144,102 @@ WaypointMap is part of a suite of related tools:
 
 ---
 
-## Key Takeaways for drone-pathfinder
+## Implementation Status for drone-pathfinder
 
-### Must-Have Features (MVP)
+> Last updated: 2026-02-23
 
-- [ ] Map-based waypoint editor
-- [ ] Shape-based waypoint generation
-- [ ] Manual waypoint placement
-- [ ] KMZ file export
-- [ ] Click-and-drag editing
-- [ ] Mission saving
+### ✅ Completed Features (MVP)
 
-### Enhanced Features (v1.0)
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Map-based waypoint editor | ✅ Done | Dark-themed Leaflet with CartoDB Dark Matter |
+| Shape-based waypoint generation | ✅ Done | Boustrophedon algorithm via Turf.js |
+| Manual waypoint placement | ✅ Done | Polygon (P) and Rectangle (R) tools |
+| KMZ file export | ✅ Done | DJI Fly compatible waylines.wpml format |
+| GPX export | ✅ Done | GPS route format |
+| JSON export | ✅ Done | Full mission metadata |
+| Click-and-drag editing | ✅ Done | Interactive zone editing |
+| Mission configuration | ✅ Done | Altitude, speed, overlap, direction, travel axis |
+| Photo action automation | ✅ Done | Configurable per-waypoint capture |
+| Flight direction control | ✅ Done | 0-359° rotation + EW/NS travel axis |
+| KMZ import capability | ✅ Done | Drag & drop to reload saved missions |
+| Multi-drone support | ✅ Done | Mini 4/5 Pro, Mavic 3/4, Air 3/3S |
+| Location search | ✅ Done | Nominatim geocoding (no API key) |
+| Keyboard shortcuts | ✅ Done | P/R/Esc/Cmd+Z |
+| Mission stats | ✅ Done | Waypoint count, area, estimated time |
+| Local mission saving | ✅ Done | Browser localStorage |
 
-- [ ] Terrain-aware altitude adjustment
-- [ ] Flight direction control
-- [ ] Photo action automation
-- [ ] Path straightening
-- [ ] KMZ import capability
+### 🚧 Planned Features (v1.0)
 
-### Advanced Features (v2.0+)
+| Feature | Status | Priority | Notes |
+|---------|--------|----------|-------|
+| Terrain-aware altitude adjustment | 🔲 Todo | High | Use elevation API (e.g., Mapbox, Open-Elevation) |
+| Path straightening | 🔲 Todo | Medium | Algorithm to smooth/align waypoints |
+| Cloud mission saving | 🔲 Todo | Medium | User accounts + backend storage |
+| Undo/Redo history | 🔲 Todo | Low | Multi-step undo beyond last zone |
+| Waypoint reordering | 🔲 Todo | Low | Drag to reorder in sidebar list |
 
-- [ ] API access
-- [ ] Multi-drone support
-- [ ] Terrain following
-- [ ] Mission planning templates
-- [ ] Integration with photogrammetry tools
+### 🔮 Future Features (v2.0+)
+
+| Feature | Status | Priority | Notes |
+|---------|--------|----------|-------|
+| API access | 🔲 Todo | Medium | REST API for programmatic mission creation |
+| Terrain following | 🔲 Todo | Medium | Dynamic altitude based on ground elevation |
+| Mission planning templates | 🔲 Todo | Low | Pre-built patterns for common use cases |
+| Photogrammetry integration | 🔲 Todo | Low | Export to WebODM, Pix4D, etc. |
+| Multi-zone optimization | 🔲 Todo | Low | Optimal path across disconnected zones |
+| Battery estimation | 🔲 Todo | Low | Based on distance, altitude, wind |
+| No-fly zone warnings | 🔲 Todo | Low | Integration with airspace APIs |
+| 3D preview | 🔲 Todo | Low | Three.js terrain visualization |
+
+### 🚀 Strategic Roadmap Additions (from latest product planning)
+
+| Feature | Status | Priority | Notes |
+|---------|--------|----------|-------|
+| True Terrain + Obstacle-Aware 3D Planning | 🔲 Planned | High | DSM/DTM-aware planning, building/tree clearance envelopes, collision-aware routing |
+| RealityScan Optimization Pack | 🔲 Planned | High | Live GSD estimator, overlap guardrails, mixed-pass templates (nadir + oblique + facade) |
+| POI Photogrammetry Mode | 🔲 Planned | High | POI-driven orbit rings, stacked altitude bands, and blind-spot/coverage scoring |
+| POV Mode | 🔲 Planned | High | POI lock for heading/gimbal with smoother cinematic tracking |
+| Camera Angle Timeline | 🔲 Planned | High | Per-segment gimbal pitch and heading control |
+| Multi-Level (Height Band) Flights | 🔲 Planned | High | Roof/mid/lower bands with controlled overlap between levels |
+| Video Mission Modes | 🔲 Planned | High | Spiral, orbital helix, and golden-ratio path generators |
+| Multi-Stage Mission Execution | 🔲 Planned | High | Return-to-home for battery swap and resume from last completed stage |
+| Manual Path Tracing | 🔲 Planned | High | Freeform path drawing alongside generated survey segments |
+| Multi-Action Waypoints | 🔲 Planned | High | Ordered waypoint action stacks (photo/hold/yaw/gimbal/video/custom tags) |
+| Multiple Map Styles | 🔲 Planned | Medium | Basemap selector (satellite/streets/terrain/planning styles) |
+| POI Overlay Manager | 🔲 Planned | Medium | Layered POI categories, labels, and toggleable overlay controls |
+
+### 📴 Offline-First Feature Pack
+
+| Feature | Status | Priority | Notes |
+|---------|--------|----------|-------|
+| Offline basemap packs | 🔲 Planned | High | Download AOI maps for no-connectivity field operations |
+| Offline elevation/terrain cache | 🔲 Planned | High | Local DSM/DTM cache for terrain-aware planning in the field |
+| Local mission vault + version history | 🔲 Planned | High | Local-first storage with rollback/diff of mission versions |
+| Offline POI layers | 🔲 Planned | Medium | Cached POI overlays for disconnected operations |
+| Offline preflight checklist mode | 🔲 Planned | Medium | Standardized checklists/emergency procedures without internet |
+| Cached geofence/regulatory awareness | 🔲 Planned | Medium | Last-sync geofence data with stale-data warnings |
+
+### 🛠️ Quality-of-Life and Pro Tools
+
+| Feature | Status | Priority | Notes |
+|---------|--------|----------|-------|
+| Preflight mission validator | 🔲 Planned | High | Rule checks for overlap, speed, clearance, and camera setup |
+| Battery-aware mission splitting | 🔲 Planned | High | Automatic segmentation by battery budget and reserve policy |
+| Wind-aware speed recommendations | 🔲 Planned | Medium | Suggest safe speed adjustments for capture quality |
+| Coverage quality scoring | 🔲 Planned | High | Predict weak zones before flight |
+| Post-flight QA + retake planner | 🔲 Planned | Medium | Generate retake-only missions for missed/weak coverage |
+| Mission compare/diff | 🔲 Planned | Medium | Compare geometry/settings/risk between mission revisions |
+| Locked planning templates | 🔲 Planned | Medium | Repeatable enterprise/inspection workflows |
+| Audit/report export bundle | 🔲 Planned | Medium | Client and compliance handoff documents |
+
+### 📊 Implementation Progress
+
+```
+MVP Features:     ████████████████████ 100% (15/15)
+v1.0 Features:    ████░░░░░░░░░░░░░░░░  20% (1/5)
+v2.0+ Features:   ░░░░░░░░░░░░░░░░░░░░   0% (0/8)
+```
 
 ---
 
