@@ -13,21 +13,6 @@ const FEATURE_FLAGS = {
   enableOffline: false,
 };
 
-// Type guard for v2 mission detection
-function isMissionV2(obj: unknown): obj is MissionV2 {
-  if (typeof obj !== 'object' || obj === null) return false;
-  const mission = obj as Record<string, unknown>;
-  return (
-    'schemaVersion' in mission &&
-    mission.schemaVersion === '2.0' &&
-    'segments' in mission &&
-    Array.isArray(mission.segments)
-  );
-}
-
-// Migration imports (will be used in future)
-// import { migrateV1ToV2 } from '@/lib/migration/v1ToV2';
-
 const DEFAULT_CONFIG: MissionConfig = {
   altitude: 80, speed: 8, overlap: 70,
   direction: 0, travelAxis: 'EW',
