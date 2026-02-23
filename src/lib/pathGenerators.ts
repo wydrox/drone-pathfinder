@@ -1,4 +1,4 @@
-import type { LatLng, MissionConfig } from '@/types/mission';
+import type { LatLng } from '@/types/mission';
 
 export interface VideoPathConfig {
   center: LatLng;
@@ -29,7 +29,7 @@ export function generateSpiralPath(config: VideoPathConfig): LatLng[] {
 export function generateHelixPath(config: VideoPathConfig): LatLng[] {
   const points: LatLng[] = [];
   const numPoints = Math.ceil(config.durationSeconds * config.speedMps / 5);
-  const heightChange = 20;
+  // const heightChange = 20;
   
   for (let i = 0; i < numPoints; i++) {
     const t = i / numPoints;

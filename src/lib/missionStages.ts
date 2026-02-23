@@ -1,4 +1,4 @@
-import type { Mission, MissionV2, MissionStage, WaypointV2 } from '@/types/mission';
+import type { MissionV2, MissionStage, WaypointV2 } from '@/types/mission';
 import type { MissionConfig } from '@/types/mission';
 
 export interface BatteryConfig {

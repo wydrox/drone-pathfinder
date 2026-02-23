@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { MissionV2, MissionStage, BatteryConfig } from '@/types/mission';
+import type { MissionV2, BatteryConfig } from '@/types/mission';
 import { 
   calculateBatteryRequirement, 
   splitMissionIntoStages, 
