@@ -5,8 +5,10 @@ export const DEFAULT_CONFIG: MissionConfig = {
   speed: 8,
   overlap: 70,
   direction: 0,
+  cameraAngle: -90,
   travelAxis: 'EW',
   photoCapture: true,
+  terrainAware: false,
   droneModel: 'DJI Mini 4 Pro',
 };
 
@@ -94,8 +96,10 @@ export const customConfigMission: Mission = {
     speed: 12,
     overlap: 85,
     direction: 45,
+    cameraAngle: -45,
     travelAxis: 'NS',
     photoCapture: false,
+    terrainAware: false,
     droneModel: 'DJI Mavic 3 Pro',
   },
 };

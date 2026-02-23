@@ -173,7 +173,7 @@ WaypointMap is part of a suite of related tools:
 
 | Feature | Status | Priority | Notes |
 |---------|--------|----------|-------|
-| Terrain-aware altitude adjustment | 🔲 Todo | High | Use elevation API (e.g., Mapbox, Open-Elevation) |
+| Terrain-aware altitude adjustment | 🚧 Partial | High | UI toggle visible in CONFIG; elevation fetching still pending |
 | Path straightening | 🔲 Todo | Medium | Algorithm to smooth/align waypoints |
 | Cloud mission saving | 🔲 Todo | Medium | User accounts + backend storage |
 | Undo/Redo history | 🔲 Todo | Low | Multi-step undo beyond last zone |
@@ -184,11 +184,11 @@ WaypointMap is part of a suite of related tools:
 | Feature | Status | Priority | Notes |
 |---------|--------|----------|-------|
 | API access | 🔲 Todo | Medium | REST API for programmatic mission creation |
-| Terrain following | 🔲 Todo | Medium | Dynamic altitude based on ground elevation |
+| Terrain following | 🚧 Partial | Medium | Terrain mode exposed in UI, full terrain-following behavior pending |
 | Mission planning templates | 🔲 Todo | Low | Pre-built patterns for common use cases |
-| Photogrammetry integration | 🔲 Todo | Low | Export to WebODM, Pix4D, etc. |
+| Photogrammetry integration | ✅ Done | Low | POI tab now exposes 360 multi-level orbit generation controls |
 | Multi-zone optimization | 🔲 Todo | Low | Optimal path across disconnected zones |
-| Battery estimation | 🔲 Todo | Low | Based on distance, altitude, wind |
+| Battery estimation | ✅ Done | Low | STAGES tab shows battery requirement and split plan |
 | No-fly zone warnings | 🔲 Todo | Low | Integration with airspace APIs |
 | 3D preview | 🔲 Todo | Low | Three.js terrain visualization |
 
@@ -196,27 +196,27 @@ WaypointMap is part of a suite of related tools:
 
 | Feature | Status | Priority | Notes |
 |---------|--------|----------|-------|
-| True Terrain + Obstacle-Aware 3D Planning | ✅ Done | High | DSM/DTM-aware planning, building/tree clearance envelopes, collision-aware routing |
-| RealityScan Optimization Pack | ✅ Done | High | Live GSD estimator, overlap guardrails, mixed-pass templates (nadir + oblique + facade) |
-| POI Photogrammetry Mode | ✅ Done | High | POI-driven orbit rings, stacked altitude bands, and blind-spot/coverage scoring |
-| POV Mode | ✅ Done | High | POI lock for heading/gimbal with smoother cinematic tracking |
-| Camera Angle Timeline | ✅ Done | High | Per-segment gimbal pitch and heading control |
-| Multi-Level (Height Band) Flights | ✅ Done | High | Roof/mid/lower bands with controlled overlap between levels |
+| True Terrain + Obstacle-Aware 3D Planning | 🚧 Partial | High | Terrain mode exposed, full 3D obstacle-aware routing not complete |
+| RealityScan Optimization Pack | 🔲 Planned | High | Guardrails/templates not yet exposed in UI |
+| POI Photogrammetry Mode | ✅ Done | High | POI-driven orbit rings, stacked altitude bands, and coverage score visible in POIs tab |
+| POV Mode | 🔲 Planned | High | POI lock/cinematic POV controls not exposed yet |
+| Camera Angle Timeline | 🚧 Partial | High | Global camera angle control added in CONFIG; per-segment timeline pending |
+| Multi-Level (Height Band) Flights | ✅ Done | High | Multi-level bands available in POI photogrammetry generator |
 | Video Mission Modes | ✅ Done | High | Spiral, orbital helix, and golden-ratio path generators |
 | Multi-Stage Mission Execution | ✅ Done | High | Return-to-home for battery swap and resume from last completed stage |
-| Manual Path Tracing | ✅ Done | High | Freeform path drawing alongside generated survey segments |
-| Multi-Action Waypoints | ✅ Done | High | Ordered waypoint action stacks (photo/hold/yaw/gimbal/video/custom tags) |
+| Manual Path Tracing | 🚧 Partial | High | Path layer visible; dedicated freeform tracing workflow pending |
+| Multi-Action Waypoints | 🔲 Planned | High | Ordered waypoint action stacks not exposed in UI |
 | Multiple Map Styles | ✅ Done | Medium | Basemap selector (satellite/streets/terrain/planning styles) |
-| POI Overlay Manager | ✅ Done | Medium | Layered POI categories, labels, and toggleable overlay controls |
+| POI Overlay Manager | 🚧 Partial | Medium | POIs can be added/removed and toggled via LAYERS; category overlays pending |
 
 ### 📴 Offline-First Feature Pack
 
 | Feature | Status | Priority | Notes |
 |---------|--------|----------|-------|
-| Offline basemap packs | ✅ Done | High | Download AOI maps for no-connectivity field operations |
-| Offline elevation/terrain cache | ✅ Done | High | Local DSM/DTM cache for terrain-aware planning in the field |
-| Local mission vault + version history | ✅ Done | High | Local-first storage with rollback/diff of mission versions |
-| Offline POI layers | ✅ Done | Medium | Cached POI overlays for disconnected operations |
+| Offline basemap packs | ✅ Done | High | OFFLINE tab supports area caching controls |
+| Offline elevation/terrain cache | 🔲 Planned | High | Elevation cache backend not exposed yet |
+| Local mission vault + version history | 🔲 Planned | High | Version history UI not exposed |
+| Offline POI layers | 🔲 Planned | Medium | Dedicated offline POI layer workflow pending |
 | Offline preflight checklist mode | 🔲 Planned | Medium | Standardized checklists/emergency procedures without internet |
 | Cached geofence/regulatory awareness | 🔲 Planned | Medium | Last-sync geofence data with stale-data warnings |
 
@@ -224,12 +224,12 @@ WaypointMap is part of a suite of related tools:
 
 | Feature | Status | Priority | Notes |
 |---------|--------|----------|-------|
-| Preflight mission validator | ✅ Done | High | Rule checks for overlap, speed, clearance, and camera setup |
+| Preflight mission validator | 🚧 Partial | High | Basic constraints in config; dedicated validator panel pending |
 | Battery-aware mission splitting | ✅ Done | High | Automatic segmentation by battery budget and reserve policy |
 | Wind-aware speed recommendations | 🔲 Planned | Medium | Suggest safe speed adjustments for capture quality |
-| Coverage quality scoring | ✅ Done | High | Predict weak zones before flight |
-| Post-flight QA + retake planner | ✅ Done | Medium | Generate retake-only missions for missed/weak coverage |
-| Mission compare/diff | ✅ Done | Medium | Compare geometry/settings/risk between mission revisions |
+| Coverage quality scoring | ✅ Done | High | Coverage score and blind-spot indicator in POI photogrammetry flow |
+| Post-flight QA + retake planner | 🔲 Planned | Medium | Retake planner workflow not exposed yet |
+| Mission compare/diff | 🔲 Planned | Medium | Diff UI not exposed yet |
 | Locked planning templates | 🔲 Planned | Medium | Repeatable enterprise/inspection workflows |
 | Audit/report export bundle | 🔲 Planned | Medium | Client and compliance handoff documents |
 
@@ -237,16 +237,16 @@ WaypointMap is part of a suite of related tools:
 
 ```
 MVP Features:     ████████████████████ 100% (15/15)
-v1.0 Features:    ████████████████████ 100% (5/5)
-v2.0+ Features:   ████████████████░░░░  75% (6/8)
-Strategic Additions: ██████████████████ 100% (11/11)
-Offline Pack:     ████████████████░░░░  75% (6/8)
-Pro Tools:        ██████████████░░░░░░  63% (5/8)
+v1.0 Features:    ████████░░░░░░░░░░░░  20% (1/5 + 1 partial)
+v2.0+ Features:   ██████████░░░░░░░░░░  38% (3/8 + 1 partial)
+Strategic Additions: ███████████░░░░░░░ 55% (5/11 + 4 partial)
+Offline Pack:     ██████░░░░░░░░░░░░░░ 25% (1/6)
+Pro Tools:        ███████░░░░░░░░░░░░░  31% (2/8 + 1 partial)
 
-OVERALL: ██████████████████░░ 85% (48/56 features)
+OVERALL: ███████████░░░░░░░░░ 52% (27/56 + partials)
 ```
 
-> Last updated: 2026-02-23 - All major v3 features implemented!
+> Last updated: 2026-02-23 - statuses corrected to reflect features that are currently visible/usable in UI.
 
 ---
 

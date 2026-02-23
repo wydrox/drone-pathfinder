@@ -16,7 +16,8 @@ import { MAP_STYLES } from '@/lib/mapStyles';
 import { usePOIManager } from '@/hooks/usePOIManager';
 import { POILayer } from '@/components/Map/POILayer';
 import { ManualPathLayer } from '@/components/Map/ManualPathLayer';
-import type { LayerVisibilityConfig } from '@/types/mission';
+import { HeatmapLayer } from '@/components/Map/HeatmapLayer';
+import type { LayerVisibilityConfig, MissionV2, WaypointV2 } from '@/types/mission';
 
 function formatTime(sec: number) {
   if (sec < 60) return `${Math.round(sec)}s`;
@@ -44,7 +45,9 @@ export default function App() {
     flightPath: true,
   });
 
-  const [mapCenter] = useState<LatLng | undefined>(undefined);
+  const [mapCenter, setMapCenter] = useState<LatLng | undefined>(undefined);
+  const [videoCenter, setVideoCenter] = useState<LatLng | null>(null);
+  const [isPickingVideoCenter, setIsPickingVideoCenter] = useState(false);
 
   const handleZoneComplete = useCallback((zone: Zone) => {
     mission.addZone(zone);
@@ -108,6 +111,74 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [mission.zones, mission.removeZone]);
 
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const map = mapRef.current;
+    const syncCenter = () => {
+      const c = map.getCenter();
+      setMapCenter({ lat: c.lat, lng: c.lng });
+    };
+    syncCenter();
+    map.on('moveend', syncCenter);
+    return () => {
+      map.off('moveend', syncCenter);
+    };
+  }, [mapReady]);
+
+  useEffect(() => {
+    if (!mapRef.current || !isPickingVideoCenter) return;
+    const map = mapRef.current;
+    const pick = (e: L.LeafletMouseEvent) => {
+      setVideoCenter({ lat: e.latlng.lat, lng: e.latlng.lng });
+      setIsPickingVideoCenter(false);
+    };
+    map.once('click', pick);
+    return () => {
+      map.off('click', pick);
+    };
+  }, [isPickingVideoCenter, mapReady]);
+
+  const toWaypoints = useCallback((points: LatLng[]): Waypoint[] => {
+    return points.map((p, i) => ({
+      id: `wp-extra-${Date.now()}-${i}`,
+      lat: p.lat,
+      lng: p.lng,
+      altitude: mission.config.altitude,
+      index: i,
+      action: 'photo',
+    }));
+  }, [mission.config.altitude]);
+
+  const missionV2: MissionV2 = {
+    id: 'mission-live',
+    name: 'Live Mission',
+    schemaVersion: '2.0',
+    segments: [],
+    stages: [],
+    waypoints: mission.waypoints.map((wp): WaypointV2 => ({
+      id: wp.id,
+      lat: wp.lat,
+      lng: wp.lng,
+      altitude: wp.altitude,
+      index: wp.index,
+      actions: [{ id: `action-${wp.id}`, type: wp.action === 'photo' ? 'photo' : 'custom' }],
+    })),
+    config: {
+      ...mission.config,
+      schemaVersion: '2.0',
+      mapStyleId,
+      terrainConfig: { mode: 'absolute', elevationSource: 'openElevation', offsetMeters: 0 },
+      layerVisibility,
+    },
+    stats: mission.stats,
+    pois: poiManager.pois,
+    poiOverlays: [],
+    obstacles: [],
+    offlinePacks: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
   return (
     <div style={{ 
       display: 'flex', 
@@ -128,7 +199,8 @@ export default function App() {
             {layerVisibility.waypoints && <WaypointLayer map={mapRef.current} waypoints={mission.waypoints} />}
             {layerVisibility.flightPath && <FlightPathLayer map={mapRef.current} waypoints={mission.waypoints} />}
             {layerVisibility.pois && <POILayer map={mapRef.current} pois={poiManager.pois} />}
-            {layerVisibility.paths && <ManualPathLayer map={mapRef.current} paths={[]} />}
+            {layerVisibility.paths && <ManualPathLayer map={mapRef.current} paths={mission.waypoints.length > 1 ? [mission.waypoints.map(w => ({ lat: w.lat, lng: w.lng }))] : []} />}
+            {layerVisibility.heatmaps && <HeatmapLayer map={mapRef.current} pois={poiManager.pois} />}
           </>
         )}
         <Toolbar
@@ -199,9 +271,13 @@ export default function App() {
         poiManager={poiManager}
         layerVisibility={layerVisibility}
         onLayerVisibilityChange={(layer) => setLayerVisibility(prev => ({...prev, [layer]: !prev[layer]}))}
-        onGenerateVideoWaypoints={() => {
-          console.log('Video waypoints generation not yet implemented');
+        onGenerateVideoWaypoints={(points) => mission.appendWaypoints(toWaypoints(points))}
+        onSetVideoCenter={() => setIsPickingVideoCenter(true)}
+        onUseMapCenterForVideo={() => {
+          if (mapCenter) setVideoCenter(mapCenter);
         }}
+        videoCenter={videoCenter}
+        missionV2={missionV2}
         mapCenter={mapCenter}
       />
     </div>

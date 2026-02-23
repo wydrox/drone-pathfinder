@@ -26,7 +26,7 @@ export function StageManager({ mission, config, waypoints = [] }: Props) {
     ? calculateBatteryRequirement(
         waypoints.map((wp) => ({ 
           ...wp, 
-          actions: [{ id: `action-\${wp.id}`, type: 'photo' as const }]
+          actions: [{ id: `action-${wp.id}`, type: 'photo' as const }]
         })),
         config,
         batteryConfig

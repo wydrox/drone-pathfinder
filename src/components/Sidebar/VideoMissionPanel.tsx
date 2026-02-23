@@ -4,23 +4,28 @@ import { generateSpiralPath, generateHelixPath, generateGoldenRatioPath } from '
 
 interface Props {
   onGenerateWaypoints: (waypoints: LatLng[]) => void;
+  center?: LatLng | null;
+  onSetCenterFromMap?: () => void;
+  onUseMapCenter?: () => void;
 }
 
 type VideoMode = 'spiral' | 'helix' | 'golden';
 
-export function VideoMissionPanel({ onGenerateWaypoints }: Props) {
+export function VideoMissionPanel({ onGenerateWaypoints, center: externalCenter = null, onSetCenterFromMap, onUseMapCenter }: Props) {
   const [mode, setMode] = useState<VideoMode>('spiral');
-  const [center, setCenter] = useState<LatLng | null>(null);
+  const [localCenter, setLocalCenter] = useState<LatLng | null>(null);
+  const center = externalCenter ?? localCenter;
   const [radius, setRadius] = useState(50);
   const [altitude, setAltitude] = useState(50);
   const [speed, setSpeed] = useState(5);
   const [duration, setDuration] = useState(30);
+  const [startHeading, setStartHeading] = useState(0);
   const [isSettingCenter, setIsSettingCenter] = useState(false);
 
   useEffect(() => {
     if (isSettingCenter) {
-      const handleMapClick = (_e: MouseEvent) => {
-        // This would be connected to map click events via props
+      const handleMapClick = () => {
+        onSetCenterFromMap?.();
         setIsSettingCenter(false);
       };
       window.addEventListener('click', handleMapClick);
@@ -52,7 +57,20 @@ export function VideoMissionPanel({ onGenerateWaypoints }: Props) {
         break;
     }
     
-    onGenerateWaypoints(points);
+    const sorted = points
+      .map(p => ({
+        p,
+        a: (Math.atan2(p.lng - center.lng, p.lat - center.lat) * 180) / Math.PI,
+      }))
+      .sort((a, b) => Math.abs(a.a - startHeading) - Math.abs(b.a - startHeading))
+      .map(v => v.p);
+
+    const startPoint: LatLng = {
+      lat: center.lat,
+      lng: center.lng,
+    };
+
+    onGenerateWaypoints([startPoint, ...sorted]);
   };
 
   const modeInfo = {
@@ -144,7 +162,7 @@ export function VideoMissionPanel({ onGenerateWaypoints }: Props) {
           }}>
             <span>{center.lat.toFixed(5)}, {center.lng.toFixed(5)}</span>
             <button
-              onClick={() => setCenter(null)}
+              onClick={() => setLocalCenter(null)}
               style={{
                 background: 'none',
                 border: 'none',
@@ -158,7 +176,10 @@ export function VideoMissionPanel({ onGenerateWaypoints }: Props) {
           </div>
         ) : (
           <button
-            onClick={() => setIsSettingCenter(true)}
+            onClick={() => {
+              setIsSettingCenter(true);
+              onSetCenterFromMap?.();
+            }}
             style={{
               width: '100%',
               padding: '12px',
@@ -173,6 +194,54 @@ export function VideoMissionPanel({ onGenerateWaypoints }: Props) {
             {isSettingCenter ? 'Click on map to set center...' : '[ SET CENTER ON MAP ]'}
           </button>
         )}
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between',
+          marginBottom: 8,
+        }}>
+          <label style={{ 
+            fontSize: 10, 
+            color: 'var(--text-dim)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            fontFamily: 'var(--font-mono)',
+          }}>
+            Start Heading
+          </label>
+          <span style={{
+            fontSize: 11,
+            color: 'var(--text-secondary)',
+            fontFamily: 'var(--font-mono)',
+          }}>
+            {startHeading}deg
+          </span>
+        </div>
+        <input
+          type="range"
+          min={-180}
+          max={180}
+          value={startHeading}
+          onChange={(e) => setStartHeading(Number(e.target.value))}
+          style={{ width: '100%', marginBottom: 8 }}
+        />
+        <button
+          onClick={() => onUseMapCenter?.()}
+          style={{
+            width: '100%',
+            padding: '8px',
+            background: 'transparent',
+            border: '1px solid var(--border)',
+            color: 'var(--text-muted)',
+            cursor: 'pointer',
+            fontSize: 11,
+            fontFamily: 'var(--font-mono)',
+          }}
+        >
+          Use Current Map Center
+        </button>
       </div>
 
       {/* Radius Slider */}

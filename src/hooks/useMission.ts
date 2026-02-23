@@ -6,17 +6,17 @@ import { generateGrid, calcStats } from '@/lib/gridAlgorithm';
 const FEATURE_FLAGS = {
   enableV2Schema: true,
   enableSegments: false,
-  enableStages: false,
+  enableStages: true,
   enableMultiAction: false,
-  enablePOI: false,
-  enableTerrain: false,
+  enablePOI: true,
+  enableTerrain: true,
   enableOffline: false,
 };
 
 const DEFAULT_CONFIG: MissionConfig = {
   altitude: 80, speed: 8, overlap: 70,
-  direction: 0, travelAxis: 'EW',
-  photoCapture: true, droneModel: 'DJI Mini 4 Pro',
+  direction: 0, cameraAngle: -90, travelAxis: 'EW',
+  photoCapture: true, terrainAware: false, droneModel: 'DJI Mini 4 Pro',
 };
 
 export function useMission() {
@@ -78,11 +78,37 @@ export function useMission() {
     setWaypoints(prev => prev.filter(wp => wp.id !== id));
   }, []);
 
+  const appendWaypoints = useCallback((wps: Waypoint[]) => {
+    setWaypoints(prev => {
+      const start = prev.length;
+      const normalized = wps.map((wp, i) => ({ ...wp, id: wp.id || `wp-${start + i}`, index: start + i }));
+      const next = [...prev, ...normalized];
+      setStats(s => ({ ...s, waypointCount: next.length }));
+      return next;
+    });
+  }, []);
+
+  const replaceWaypoints = useCallback((wps: Waypoint[]) => {
+    setWaypoints(wps.map((wp, i) => ({ ...wp, index: i })));
+    setStats(s => ({ ...s, waypointCount: wps.length }));
+  }, []);
+
   const setImportedWaypoints = useCallback((wps: Waypoint[] | WaypointV2[]) => {
-    // Detect v2 structure based on presence of actions array
-    const isV2 = (wps as any)[0]?.actions !== undefined;
+    const first = wps[0];
+    const isV2 = !!first && 'actions' in first;
     setSchemaVersion(isV2 ? '2.0' : '1.0');
-    setWaypoints(wps as Waypoint[]);
+    if (isV2) {
+      setWaypoints((wps as WaypointV2[]).map(wp => ({
+        id: wp.id,
+        lat: wp.lat,
+        lng: wp.lng,
+        altitude: wp.altitude,
+        index: wp.index,
+        action: wp.actions.some(a => a.type === 'photo') ? 'photo' : 'none',
+      })));
+    } else {
+      setWaypoints(wps as Waypoint[]);
+    }
     setStats({ waypointCount: wps.length, areaSqm: 0, estimatedTimeSec: 0 });
   }, []);
 
@@ -92,5 +118,6 @@ export function useMission() {
     features,
     isFeatureEnabled,
     addZone, removeZone, updateConfig, clearAll, updateWaypoint, removeWaypoint, setImportedWaypoints,
+    appendWaypoints, replaceWaypoints,
   };
 }

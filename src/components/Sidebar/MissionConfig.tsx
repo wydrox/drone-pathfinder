@@ -278,6 +278,76 @@ export function MissionConfig({ config, onChange, stats }: Props) {
         info="Enable to capture photos at each waypoint. Disable for reconnaissance flights."
       />
 
+      <SliderRow
+        label="Camera Angle"
+        value={config.cameraAngle}
+        min={-90}
+        max={30}
+        unit="deg"
+        onChange={v => onChange({ cameraAngle: v })}
+        info="Gimbal pitch. -90° points straight down for mapping; higher angles for oblique capture."
+      />
+
+      <div style={{
+        fontFamily: 'var(--font-mono)',
+        fontSize: 10,
+        color: 'var(--text-dim)',
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em',
+        marginBottom: 16,
+        marginTop: 24,
+        borderBottom: '1px solid var(--border-subtle)',
+        paddingBottom: 8,
+      }}>
+        Terrain Awareness
+      </div>
+
+      <ToggleRow
+        label="Terrain-Aware Mode"
+        value={config.terrainAware}
+        onChange={v => onChange({ terrainAware: v })}
+        info="Adjust altitude behavior for terrain-following workflows."
+      />
+
+      {config.terrainAware && (
+        <div style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          padding: '12px',
+          marginBottom: 16,
+          borderRadius: 6,
+        }}>
+          <div style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: 10,
+            color: 'var(--text-dim)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            marginBottom: 8,
+          }}>
+            Elevation Data
+          </div>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 12,
+          }}>
+            <div>
+              <div style={{ fontSize: 10, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>Ground Elev</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
+                -- m
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 10, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>AGL</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
+                {config.altitude} m
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Row label="Drone Model" info="Select your DJI drone model for compatibility.">
         <select 
           value={config.droneModel} 

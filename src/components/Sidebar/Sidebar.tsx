@@ -32,6 +32,9 @@ interface Props {
   layerVisibility: LayerVisibilityConfig;
   onLayerVisibilityChange: (layer: keyof LayerVisibilityConfig) => void;
   onGenerateVideoWaypoints?: (waypoints: LatLng[]) => void;
+  onSetVideoCenter?: () => void;
+  onUseMapCenterForVideo?: () => void;
+  videoCenter?: LatLng | null;
   missionV2?: MissionV2;
   mapCenter?: LatLng;
 }
@@ -43,10 +46,9 @@ export function Sidebar(props: Props) {
   const [showHelp, setShowHelp] = useState(true);
 
   const tabStyle = (t: Tab) => ({
-    flex: 1,
-    padding: '12px 0',
+    padding: '8px 6px',
     textAlign: 'center' as const,
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: tab === t ? 600 : 400,
     color: tab === t ? 'var(--text-primary)' : 'var(--text-muted)',
     background: tab === t ? 'var(--bg-card)' : 'transparent',
@@ -54,8 +56,11 @@ export function Sidebar(props: Props) {
     borderBottom: `2px solid ${tab === t ? 'var(--text-primary)' : 'transparent'}`,
     cursor: 'pointer',
     textTransform: 'uppercase' as const,
-    letterSpacing: '0.08em',
+    letterSpacing: '0.06em',
     transition: 'all 0.1s',
+    whiteSpace: 'nowrap' as const,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   });
 
   const tabs: Tab[] = ['config', 'waypoints', 'pois', 'layers', 'video', 'stages', 'offline', 'export'];
@@ -63,8 +68,8 @@ export function Sidebar(props: Props) {
   const getTabLabel = (t: Tab) => {
     switch (t) {
       case 'config': return 'CONFIG';
-      case 'waypoints': return `WAYPOINTS (${props.stats.waypointCount})`;
-      case 'pois': return `POIs (${props.poiManager.pois.length})`;
+      case 'waypoints': return `WPTS (${props.stats.waypointCount})`;
+      case 'pois': return `POIS (${props.poiManager.pois.length})`;
       case 'layers': return 'LAYERS';
       case 'video': return 'VIDEO';
       case 'stages': return 'STAGES';
@@ -99,7 +104,7 @@ export function Sidebar(props: Props) {
         }}>
           DRONE PATHFINDER
         </div>
-        <div style={{ display: 'flex', gap: 0, overflowX: 'auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 0 }}>
           {tabs.map(t => (
             <button
               key={t}
@@ -213,7 +218,9 @@ export function Sidebar(props: Props) {
         {tab === 'pois' && (
           <POIPanel
             pois={props.poiManager.pois}
+            onAddPOI={props.poiManager.addPOI}
             onRemovePOI={props.poiManager.removePOI}
+            onGenerateWaypoints={props.onGenerateVideoWaypoints}
           />
         )}
         
@@ -227,6 +234,9 @@ export function Sidebar(props: Props) {
         {tab === 'video' && props.onGenerateVideoWaypoints && (
           <VideoMissionPanel
             onGenerateWaypoints={props.onGenerateVideoWaypoints}
+            onSetCenterFromMap={props.onSetVideoCenter}
+            onUseMapCenter={props.onUseMapCenterForVideo}
+            center={props.videoCenter ?? null}
           />
         )}
         

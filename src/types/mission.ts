@@ -23,8 +23,10 @@ export interface MissionConfig {
   speed: number;
   overlap: number;
   direction: number;
+  cameraAngle: number;
   travelAxis: 'NS' | 'EW';
   photoCapture: boolean;
+  terrainAware: boolean;
   droneModel: string;
 }
 

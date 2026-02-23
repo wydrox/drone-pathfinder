@@ -1,4 +1,4 @@
-import type { POI, MissionConfig } from '@/types/mission';
+import type { POI } from '@/types/mission';
 import type { LatLng } from '@/types/mission';
 
 export interface OrbitConfig {
@@ -48,7 +48,7 @@ export interface StackedLevelConfig {
 }
 
 export function generateStackedLevels(
-  poi: POI,
+  _poi: POI,
   baseRings: LatLng[][],
   config: StackedLevelConfig
 ): { altitude: number; points: LatLng[] }[] {
