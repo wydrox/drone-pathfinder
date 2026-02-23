@@ -3,7 +3,9 @@ import type { MissionConfig as MConfig, MissionStats, Waypoint } from '@/types/m
 import { MissionConfig } from './MissionConfig';
 import { WaypointList } from './WaypointList';
 import { ExportPanel } from './ExportPanel';
-
+import { POIPanel } from './POIPanel';
+import { LayerPanel } from './LayerPanel';
+import type { MapStyle, LayerVisibilityConfig } from '@/types/mission';
 interface Props {
   config: MConfig;
   onConfigChange: (p: Partial<MConfig>) => void;
@@ -15,9 +17,19 @@ interface Props {
   onExportKmz: () => void;
   onExportGpx: () => void;
   onExportJson: () => void;
+  mapStyles: MapStyle[];
+  currentMapStyleId: string;
+  onMapStyleChange: (id: string) => void;
+  poiManager: {
+    pois: { id: string; name: string; lat: number; lng: number }[];
+    addPOI: (poi: { name: string; lat: number; lng: number; altitude: number; category: string; radiusMeters: number }) => void;
+    removePOI: (id: string) => void;
+  };
+  layerVisibility: LayerVisibilityConfig;
+  onLayerVisibilityChange: (layer: keyof LayerVisibilityConfig) => void;
 }
 
-type Tab = 'config' | 'waypoints' | 'export';
+type Tab = 'config' | 'waypoints' | 'pois' | 'layers' | 'export';
 
 export function Sidebar(props: Props) {
   const [tab, setTab] = useState<Tab>('config');
@@ -66,13 +78,13 @@ export function Sidebar(props: Props) {
           DRONE PATHFINDER
         </div>
         <div style={{ display: 'flex', gap: 0 }}>
-          {(['config', 'waypoints', 'export'] as Tab[]).map(t => (
+          {(['config', 'waypoints', 'pois', 'layers', 'export'] as Tab[]).map(t => (
             <button
               key={t}
               style={tabStyle(t)}
               onClick={() => setTab(t)}
             >
-              {t === 'config' ? 'CONFIG' : t === 'waypoints' ? `WAYPOINTS (${props.stats.waypointCount})` : 'EXPORT'}
+              {t === 'config' ? 'CONFIG' : t === 'waypoints' ? `WAYPOINTS (${props.stats.waypointCount})` : t === 'pois' ? `POIs (${props.poiManager.pois.length})` : t === 'layers' ? 'LAYERS' : 'EXPORT'}
             </button>
           ))}
         </div>
@@ -139,17 +151,52 @@ export function Sidebar(props: Props) {
         background: 'var(--bg-surface)',
       }}>
         {tab === 'config' && (
-          <MissionConfig
-            config={props.config}
-            onChange={props.onConfigChange}
-            stats={props.stats}
-          />
+          <>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 12, color: 'var(--text-dim)', display: 'block', marginBottom: 8 }}>Map Style</label>
+              <select
+                value={props.currentMapStyleId}
+                onChange={(e) => props.onMapStyleChange(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 6,
+                  color: 'var(--text-primary)',
+                  fontSize: 13,
+                }}
+              >
+                {props.mapStyles.map(style => (
+                  <option key={style.id} value={style.id}>{style.name}</option>
+                ))}
+              </select>
+            </div>
+            <MissionConfig
+              config={props.config}
+              onChange={props.onConfigChange}
+              stats={props.stats}
+            />
+          </>
         )}
         {tab === 'waypoints' && (
           <WaypointList
             waypoints={props.waypoints}
             onUpdate={props.onUpdateWaypoint}
             onRemove={props.onRemoveWaypoint}
+          />
+        )}
+        {tab === 'pois' && (
+          <POIPanel
+            pois={props.poiManager.pois}
+            onAddPOI={props.poiManager.addPOI}
+            onRemovePOI={props.poiManager.removePOI}
+          />
+        )}
+        {tab === 'layers' && (
+          <LayerPanel
+            visibility={props.layerVisibility}
+            onToggle={props.onLayerVisibilityChange}
           />
         )}
         {tab === 'export' && (

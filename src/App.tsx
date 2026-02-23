@@ -12,7 +12,11 @@ import type { Zone, Waypoint } from '@/types/mission';
 import { exportKmz } from '@/lib/kmzGenerator';
 import { exportGpx } from '@/lib/gpxGenerator';
 import { exportJson } from '@/lib/jsonExporter';
-
+import { MAP_STYLES } from '@/lib/mapStyles';
+import { usePOIManager } from '@/hooks/usePOIManager';
+import { POILayer } from '@/components/Map/POILayer';
+import { ManualPathLayer } from '@/components/Map/ManualPathLayer';
+import type { LayerVisibilityConfig } from '@/types/mission';
 function formatTime(sec: number) {
   if (sec < 60) return `${Math.round(sec)}s`;
   return `${Math.floor(sec / 60)}m ${Math.round(sec % 60)}s`;
@@ -26,7 +30,18 @@ function formatArea(sqm: number) {
 export default function App() {
   const mapRef = useRef<L.Map | null>(null);
   const [mapReady, setMapReady] = useState(false);
+  const [mapStyleId, setMapStyleId] = useState('carto-dark');
   const mission = useMission();
+  const poiManager = usePOIManager();
+  
+  const [layerVisibility, setLayerVisibility] = useState<LayerVisibilityConfig>({
+    zones: true,
+    waypoints: true,
+    paths: true,
+    pois: true,
+    heatmaps: true,
+    flightPath: true,
+  });
 
   const handleZoneComplete = useCallback((zone: Zone) => {
     mission.addZone(zone);
@@ -99,12 +114,18 @@ export default function App() {
       fontFamily: 'var(--font-sans)',
     }}>
       <div style={{ flex: 1, position: 'relative' }}>
-        <MapContainer mapRef={mapRef} onMapReady={() => setMapReady(true)} />
+        <MapContainer 
+          mapRef={mapRef} 
+          onMapReady={() => setMapReady(true)}
+          mapStyleId={mapStyleId}
+        />
         {mapReady && (
           <>
-            <ZoneLayer map={mapRef.current} zones={mission.zones} />
-            <WaypointLayer map={mapRef.current} waypoints={mission.waypoints} />
-            <FlightPathLayer map={mapRef.current} waypoints={mission.waypoints} />
+            {layerVisibility.zones && <ZoneLayer map={mapRef.current} zones={mission.zones} />}
+            {layerVisibility.waypoints && <WaypointLayer map={mapRef.current} waypoints={mission.waypoints} />}
+            {layerVisibility.flightPath && <FlightPathLayer map={mapRef.current} waypoints={mission.waypoints} />}
+            {layerVisibility.pois && <POILayer map={mapRef.current} pois={poiManager.pois} />}
+            {layerVisibility.paths && <ManualPathLayer map={mapRef.current} paths={[]} />}
           </>
         )}
         <Toolbar
@@ -169,7 +190,12 @@ export default function App() {
         onExportKmz={handleExportKmz}
         onExportGpx={handleExportGpx}
         onExportJson={handleExportJson}
+        mapStyles={MAP_STYLES}
+        currentMapStyleId={mapStyleId}
+        onMapStyleChange={setMapStyleId}
+        poiManager={poiManager}
+        layerVisibility={layerVisibility}
+        onLayerVisibilityChange={setLayerVisibility}
       />
-    </div>
   );
 }
