@@ -1,4 +1,4 @@
-import type { MissionV2, MissionStage } from '@/types/mission';
+import type { MissionStage } from '@/types/mission';
 
 interface Props {
   stages: MissionStage[];
