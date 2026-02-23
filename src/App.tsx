@@ -6,7 +6,6 @@ import { FlightPathLayer } from '@/components/Map/FlightPathLayer';
 import { ZoneLayer } from '@/components/Map/ZoneLayer';
 import { Toolbar } from '@/components/Toolbar/Toolbar';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
-import { GeocoderSearch } from '@/components/Geocoder/GeocoderSearch';
 import { useMission } from '@/hooks/useMission';
 import { useMapDrawing } from '@/hooks/useMapDrawing';
 import type { Zone, Waypoint } from '@/types/mission';
@@ -113,15 +112,14 @@ export default function App() {
           setMode={setMode}
           onClear={mission.clearAll}
           waypointCount={mission.waypoints.length}
+          map={mapRef.current}
         />
-
-        <GeocoderSearch map={mapRef.current} />
         
         <div style={{
           position: 'absolute', 
           bottom: 0, 
           left: 0,
-          right: 320,
+          right: 0,
           zIndex: 1000, 
           background: 'var(--bg-surface)',
           borderTop: '1px solid var(--border)',

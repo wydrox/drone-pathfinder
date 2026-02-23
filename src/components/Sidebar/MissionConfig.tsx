@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { MissionConfig as MConfig, MissionStats } from '@/types/mission';
 
 const DRONES = ['DJI Mini 4 Pro', 'DJI Mini 5 Pro', 'DJI Mavic 4 Pro', 'DJI Air 3', 'DJI Air 3S', 'DJI Mavic 3', 'DJI Mavic 3 Pro'];
@@ -7,21 +7,43 @@ interface Props { config: MConfig; onChange: (p: Partial<MConfig>) => void; stat
 
 function InfoTooltip({ text }: { text: string }) {
   const [show, setShow] = useState(false);
+  const tooltipRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (tooltipRef.current && !tooltipRef.current.contains(e.target as Node)) {
+        setShow(false);
+      }
+    };
+    if (show) {
+      document.addEventListener('click', handleClickOutside);
+    }
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [show]);
+
   return (
-    <span 
-      style={{ 
-        color: 'var(--text-dim)', 
-        cursor: 'help',
-        fontSize: 10,
-        marginLeft: 4,
-      }}
-      onMouseEnter={() => setShow(true)}
-      onMouseLeave={() => setShow(false)}
-    >
-      [?]
+    <span ref={tooltipRef} style={{ position: 'relative' }}>
+      <button
+        onClick={() => setShow(!show)}
+        style={{
+          color: 'var(--text-dim)',
+          cursor: 'pointer',
+          fontSize: 10,
+          marginLeft: 4,
+          background: 'none',
+          border: 'none',
+          padding: 0,
+          fontFamily: 'var(--font-mono)',
+        }}
+      >
+        [?]
+      </button>
       {show && (
         <span style={{
           position: 'absolute',
+          top: '100%',
+          left: '50%',
+          transform: 'translateX(-50%)',
           background: 'var(--bg-card)',
           border: '1px solid var(--border)',
           padding: '8px 12px',
@@ -30,7 +52,6 @@ function InfoTooltip({ text }: { text: string }) {
           maxWidth: 200,
           zIndex: 1000,
           marginTop: 4,
-          marginLeft: -100,
         }}>
           {text}
         </span>

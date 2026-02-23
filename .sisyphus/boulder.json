@@ -7,13 +7,13 @@
   "session_ids": ["ses_3751ce751ffe7JPKFNJSNAZ06m"],
   "tracks": {
     "A": {"name": "Core Domain & State", "status": "completed", "current_task": null, "agent": null},
-    "B": {"name": "Map & UX Systems", "status": "in_progress", "current_task": "B2.1", "agent": null},
+    "B": {"name": "Map & UX Systems", "status": "completed", "current_task": null, "agent": null},
     "C": {"name": "Capture/Planning Modes", "status": "pending", "current_task": null, "agent": null},
     "D": {"name": "Terrain/Safety Intelligence", "status": "pending", "current_task": null, "agent": null},
     "E": {"name": "Execution/Exports", "status": "completed", "current_task": null, "agent": null},
     "F": {"name": "Offline/Pro Tools", "status": "pending", "current_task": null, "agent": null}
   },
-  "completed_phases": [1],
+  "completed_phases": [1, 2],
   "blocked_tracks": [],
-  "notes": "Phase 1 Complete: Schema v2, migration adapters, export contracts. Starting Phase 2: Map enhancements."
+  "notes": "Phases 1-2 Complete: Schema v2, migration adapters, export contracts, map styles, POI overlays, manual paths, layer controls. Ready for Phase 3: Camera modes."
 }
