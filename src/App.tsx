@@ -197,5 +197,6 @@ export default function App() {
         layerVisibility={layerVisibility}
         onLayerVisibilityChange={setLayerVisibility}
       />
+    </div>
   );
 }
