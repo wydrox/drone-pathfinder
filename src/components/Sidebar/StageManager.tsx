@@ -12,8 +12,7 @@ interface Props {
   mission?: MissionV2;
   config?: MissionConfig;
   waypoints?: Array<{ id: string; lat: number; lng: number; altitude: number; index: number }>;
-  }
-
+}
 
 export function StageManager({ mission, config, waypoints = [] }: Props) {
   const [batteryConfig, setBatteryConfig] = useState<BatteryConfig>(DEFAULT_BATTERY_CONFIG);
@@ -27,8 +26,11 @@ export function StageManager({ mission, config, waypoints = [] }: Props) {
     ? calculateBatteryRequirement(
         waypoints.map((wp) => ({ 
           ...wp, 
-          actions: [{ id: `action-${wp.id}`, type: 'photo' as const }]
+          actions: [{ id: `action-\${wp.id}`, type: 'photo' as const }]
         })),
+        config,
+        batteryConfig
+      )
     : 0;
 
   const handleGenerateTokens = (stageIndex: number) => {
@@ -52,7 +54,6 @@ export function StageManager({ mission, config, waypoints = [] }: Props) {
         Battery & Mission Staging
       </div>
 
-      {/* Battery Summary */}
       <div style={{
         background: 'var(--bg-card)',
         border: '1px solid var(--border)',
@@ -76,7 +77,7 @@ export function StageManager({ mission, config, waypoints = [] }: Props) {
           gap: 8,
         }}>
           <span style={{
-            fontSize: 28,
+            fontSize: 24,
             fontWeight: 700,
             color: totalBatteryRequired > 100 ? '#ef4444' : totalBatteryRequired > 80 ? '#f59e0b' : '#22c55e',
             fontFamily: 'var(--font-mono)',
@@ -103,7 +104,6 @@ export function StageManager({ mission, config, waypoints = [] }: Props) {
         )}
       </div>
 
-      {/* Battery Configuration Toggle */}
       <button
         onClick={() => setShowConfig(!showConfig)}
         style={{
@@ -127,7 +127,6 @@ export function StageManager({ mission, config, waypoints = [] }: Props) {
         <span>{showConfig ? '▼' : '▶'}</span>
       </button>
 
-      {/* Battery Config Panel */}
       {showConfig && (
         <div style={{
           background: 'var(--bg-card)',
@@ -183,7 +182,6 @@ export function StageManager({ mission, config, waypoints = [] }: Props) {
         </div>
       )}
 
-      {/* Mission Stages */}
       {stages.length > 0 && (
         <div>
           <div style={{
