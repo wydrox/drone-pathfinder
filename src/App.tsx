@@ -195,7 +195,7 @@ export default function App() {
         onMapStyleChange={setMapStyleId}
         poiManager={poiManager}
         layerVisibility={layerVisibility}
-        onLayerVisibilityChange={setLayerVisibility}
+        onLayerVisibilityChange={(layer) => setLayerVisibility(prev => ({...prev, [layer]: !prev[layer]}))}
       />
     </div>
   );

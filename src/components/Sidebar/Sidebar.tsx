@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { MissionConfig as MConfig, MissionStats, Waypoint } from '@/types/mission';
+import type { MissionConfig as MConfig, MissionStats, Waypoint, POI } from '@/types/mission';
 import { MissionConfig } from './MissionConfig';
 import { WaypointList } from './WaypointList';
 import { ExportPanel } from './ExportPanel';
@@ -21,14 +21,13 @@ interface Props {
   currentMapStyleId: string;
   onMapStyleChange: (id: string) => void;
   poiManager: {
-    pois: { id: string; name: string; lat: number; lng: number }[];
-    addPOI: (poi: { name: string; lat: number; lng: number; altitude: number; category: string; radiusMeters: number }) => void;
+    pois: POI[];
+    addPOI: (poi: Omit<POI, 'id'>) => POI;
     removePOI: (id: string) => void;
   };
   layerVisibility: LayerVisibilityConfig;
   onLayerVisibilityChange: (layer: keyof LayerVisibilityConfig) => void;
 }
-
 type Tab = 'config' | 'waypoints' | 'pois' | 'layers' | 'export';
 
 export function Sidebar(props: Props) {
@@ -189,7 +188,6 @@ export function Sidebar(props: Props) {
         {tab === 'pois' && (
           <POIPanel
             pois={props.poiManager.pois}
-            onAddPOI={props.poiManager.addPOI}
             onRemovePOI={props.poiManager.removePOI}
           />
         )}
