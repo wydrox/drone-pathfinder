@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { MissionConfig, Waypoint, Zone, MissionStats, SchemaVersion, MissionV2, WaypointV2 } from '@/types/mission';
+import type { MissionConfig, Waypoint, Zone, MissionStats, SchemaVersion, WaypointV2 } from '@/types/mission';
 import { generateGrid, calcStats } from '@/lib/gridAlgorithm';
 
 // Feature flags for incremental rollout
