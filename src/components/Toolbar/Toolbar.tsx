@@ -139,8 +139,7 @@ export function Toolbar({ drawMode, setMode, onClear, waypointCount, map, onUndo
           >
             Clear All
           </button>
-        </>
-
+          
           {onUndo && onRedo && (
             <>
               <div style={{
@@ -178,6 +177,7 @@ export function Toolbar({ drawMode, setMode, onClear, waypointCount, map, onUndo
               </button>
             </>
           )}
+        </>
       )}
 
       <div style={{ flex: 1 }} />
