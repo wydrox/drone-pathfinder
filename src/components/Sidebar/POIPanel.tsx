@@ -2,11 +2,10 @@ import type { POI } from '@/types/mission';
 
 interface Props {
   pois: POI[];
-  onAddPOI: (poi: Omit<POI, 'id'>) => void;
   onRemovePOI: (id: string) => void;
 }
 
-export function POIPanel({ pois, onAddPOI, onRemovePOI }: Props) {
+export function POIPanel({ pois, onRemovePOI }: Props) {
   return (
     <div style={{ padding: '12px 0' }}>
       <div style={{ 
