@@ -1,11 +1,15 @@
 import { useState } from 'react';
-import type { MissionConfig as MConfig, MissionStats, Waypoint, POI } from '@/types/mission';
+import type { MissionConfig as MConfig, MissionStats, Waypoint, POI, MissionV2, LatLng } from '@/types/mission';
 import { MissionConfig } from './MissionConfig';
 import { WaypointList } from './WaypointList';
 import { ExportPanel } from './ExportPanel';
 import { POIPanel } from './POIPanel';
 import { LayerPanel } from './LayerPanel';
+import { VideoMissionPanel } from './VideoMissionPanel';
+import { StageManager } from './StageManager';
+import { OfflinePanel } from './OfflinePanel';
 import type { MapStyle, LayerVisibilityConfig } from '@/types/mission';
+
 interface Props {
   config: MConfig;
   onConfigChange: (p: Partial<MConfig>) => void;
@@ -27,8 +31,12 @@ interface Props {
   };
   layerVisibility: LayerVisibilityConfig;
   onLayerVisibilityChange: (layer: keyof LayerVisibilityConfig) => void;
+  onGenerateVideoWaypoints?: (waypoints: LatLng[]) => void;
+  missionV2?: MissionV2;
+  mapCenter?: LatLng;
 }
-type Tab = 'config' | 'waypoints' | 'pois' | 'layers' | 'export';
+
+type Tab = 'config' | 'waypoints' | 'pois' | 'layers' | 'video' | 'stages' | 'offline' | 'export';
 
 export function Sidebar(props: Props) {
   const [tab, setTab] = useState<Tab>('config');
@@ -38,7 +46,7 @@ export function Sidebar(props: Props) {
     flex: 1,
     padding: '12px 0',
     textAlign: 'center' as const,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: tab === t ? 600 : 400,
     color: tab === t ? 'var(--text-primary)' : 'var(--text-muted)',
     background: tab === t ? 'var(--bg-card)' : 'transparent',
@@ -49,6 +57,21 @@ export function Sidebar(props: Props) {
     letterSpacing: '0.08em',
     transition: 'all 0.1s',
   });
+
+  const tabs: Tab[] = ['config', 'waypoints', 'pois', 'layers', 'video', 'stages', 'offline', 'export'];
+
+  const getTabLabel = (t: Tab) => {
+    switch (t) {
+      case 'config': return 'CONFIG';
+      case 'waypoints': return `WAYPOINTS (${props.stats.waypointCount})`;
+      case 'pois': return `POIs (${props.poiManager.pois.length})`;
+      case 'layers': return 'LAYERS';
+      case 'video': return 'VIDEO';
+      case 'stages': return 'STAGES';
+      case 'offline': return 'OFFLINE';
+      case 'export': return 'EXPORT';
+    }
+  };
 
   return (
     <div style={{
@@ -76,14 +99,14 @@ export function Sidebar(props: Props) {
         }}>
           DRONE PATHFINDER
         </div>
-        <div style={{ display: 'flex', gap: 0 }}>
-          {(['config', 'waypoints', 'pois', 'layers', 'export'] as Tab[]).map(t => (
+        <div style={{ display: 'flex', gap: 0, overflowX: 'auto' }}>
+          {tabs.map(t => (
             <button
               key={t}
               style={tabStyle(t)}
               onClick={() => setTab(t)}
             >
-              {t === 'config' ? 'CONFIG' : t === 'waypoints' ? `WAYPOINTS (${props.stats.waypointCount})` : t === 'pois' ? `POIs (${props.poiManager.pois.length})` : t === 'layers' ? 'LAYERS' : 'EXPORT'}
+              {getTabLabel(t)}
             </button>
           ))}
         </div>
@@ -178,6 +201,7 @@ export function Sidebar(props: Props) {
             />
           </>
         )}
+        
         {tab === 'waypoints' && (
           <WaypointList
             waypoints={props.waypoints}
@@ -185,18 +209,41 @@ export function Sidebar(props: Props) {
             onRemove={props.onRemoveWaypoint}
           />
         )}
+        
         {tab === 'pois' && (
           <POIPanel
             pois={props.poiManager.pois}
             onRemovePOI={props.poiManager.removePOI}
           />
         )}
+        
         {tab === 'layers' && (
           <LayerPanel
             visibility={props.layerVisibility}
             onToggle={props.onLayerVisibilityChange}
           />
         )}
+        
+        {tab === 'video' && props.onGenerateVideoWaypoints && (
+          <VideoMissionPanel
+            onGenerateWaypoints={props.onGenerateVideoWaypoints}
+          />
+        )}
+        
+        {tab === 'stages' && (
+          <StageManager
+            mission={props.missionV2}
+            config={props.config}
+            waypoints={props.waypoints}
+          />
+        )}
+        
+        {tab === 'offline' && (
+          <OfflinePanel
+            currentCenter={props.mapCenter}
+          />
+        )}
+        
         {tab === 'export' && (
           <ExportPanel
             onExportKmz={props.onExportKmz}
@@ -219,7 +266,7 @@ export function Sidebar(props: Props) {
         justifyContent: 'space-between',
         alignItems: 'center',
       }}>
-        <span>v1.0.0</span>
+        <span>v2.0.0</span>
         <span>WARSAW • 52.23°N 21.01°E</span>
       </div>
     </div>

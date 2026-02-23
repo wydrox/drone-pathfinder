@@ -8,7 +8,7 @@ import { Toolbar } from '@/components/Toolbar/Toolbar';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
 import { useMission } from '@/hooks/useMission';
 import { useMapDrawing } from '@/hooks/useMapDrawing';
-import type { Zone, Waypoint } from '@/types/mission';
+import type { Zone, Waypoint, LatLng } from '@/types/mission';
 import { exportKmz } from '@/lib/kmzGenerator';
 import { exportGpx } from '@/lib/gpxGenerator';
 import { exportJson } from '@/lib/jsonExporter';
@@ -17,6 +17,7 @@ import { usePOIManager } from '@/hooks/usePOIManager';
 import { POILayer } from '@/components/Map/POILayer';
 import { ManualPathLayer } from '@/components/Map/ManualPathLayer';
 import type { LayerVisibilityConfig } from '@/types/mission';
+
 function formatTime(sec: number) {
   if (sec < 60) return `${Math.round(sec)}s`;
   return `${Math.floor(sec / 60)}m ${Math.round(sec % 60)}s`;
@@ -42,6 +43,8 @@ export default function App() {
     heatmaps: true,
     flightPath: true,
   });
+
+  const [mapCenter, setMapCenter] = useState<LatLng | undefined>(undefined);
 
   const handleZoneComplete = useCallback((zone: Zone) => {
     mission.addZone(zone);
@@ -196,6 +199,17 @@ export default function App() {
         poiManager={poiManager}
         layerVisibility={layerVisibility}
         onLayerVisibilityChange={(layer) => setLayerVisibility(prev => ({...prev, [layer]: !prev[layer]}))}
+        onGenerateVideoWaypoints={(waypoints) => {
+          waypoints.forEach((wp, i) => {
+            mission.addZone({
+              id: `video-${Date.now()}-${i}`,
+              type: 'polygon',
+              points: [wp],
+              altitude: mission.config.altitude,
+            });
+          });
+        }}
+        mapCenter={mapCenter}
       />
     </div>
   );
