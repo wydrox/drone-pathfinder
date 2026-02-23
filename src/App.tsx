@@ -18,6 +18,7 @@ function formatTime(sec: number) {
   if (sec < 60) return `${Math.round(sec)}s`;
   return `${Math.floor(sec / 60)}m ${Math.round(sec % 60)}s`;
 }
+
 function formatArea(sqm: number) {
   if (sqm >= 10000) return `${(sqm / 10000).toFixed(2)} ha`;
   return `${Math.round(sqm)} m²`;
@@ -91,7 +92,13 @@ export default function App() {
   }, [mission.zones, mission.removeZone]);
 
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', background: '#0d0f14' }}>
+    <div style={{ 
+      display: 'flex', 
+      height: '100vh', 
+      width: '100vw', 
+      background: 'var(--bg-base)',
+      fontFamily: 'var(--font-sans)',
+    }}>
       <div style={{ flex: 1, position: 'relative' }}>
         <MapContainer mapRef={mapRef} onMapReady={() => setMapReady(true)} />
         {mapReady && (
@@ -111,21 +118,44 @@ export default function App() {
         <GeocoderSearch map={mapRef.current} />
         
         <div style={{
-          position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)',
-          zIndex: 1000, background: '#161922cc', border: '1px solid #2a2f45',
-          borderRadius: 20, padding: '6px 20px', color: '#e8eaf0', fontSize: 12,
-          backdropFilter: 'blur(8px)', display: 'flex', gap: 16, alignItems: 'center',
+          position: 'absolute', 
+          bottom: 0, 
+          left: 0,
+          right: 320,
+          zIndex: 1000, 
+          background: 'var(--bg-surface)',
+          borderTop: '1px solid var(--border)',
+          padding: '8px 16px',
+          display: 'flex',
+          gap: 24,
+          alignItems: 'center',
+          fontFamily: 'var(--font-mono)',
+          fontSize: '12px',
         }}>
-          <span>⬡ {mission.stats.waypointCount} waypoints</span>
-          <span style={{ color: '#2a2f45' }}>|</span>
-          <span>◻ {formatArea(mission.stats.areaSqm)}</span>
-          <span style={{ color: '#2a2f45' }}>|</span>
-          <span>⏱ {formatTime(mission.stats.estimatedTimeSec)}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>WP</span>
+            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{mission.stats.waypointCount}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AREA</span>
+            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{formatArea(mission.stats.areaSqm)}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TIME</span>
+            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{formatTime(mission.stats.estimatedTimeSec)}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ALT</span>
+            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{mission.config.altitude}m</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>SPD</span>
+            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{mission.config.speed}m/s</span>
+          </div>
           {mission.zones.length === 0 && (
-            <>
-              <span style={{ color: '#2a2f45' }}>|</span>
-              <span style={{ color: '#6b7280' }}>Draw a shape to generate waypoints</span>
-            </>
+            <div style={{ marginLeft: 'auto', color: 'var(--text-muted)' }}>
+              Draw polygon or rectangle to generate flight path
+            </div>
           )}
         </div>
       </div>

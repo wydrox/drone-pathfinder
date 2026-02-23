@@ -31,27 +31,54 @@ export function GeocoderSearch({ map }: Props) {
   };
 
   return (
-    <div style={{ position: 'absolute', top: 16, right: 332, zIndex: 1000, width: 260 }}>
-      <input value={query} onChange={handleChange} placeholder="Search location..."
+    <div style={{
+      position: 'absolute',
+      top: 60,
+      right: 336,
+      zIndex: 1000,
+      width: 280,
+    }}>
+      <input
+        value={query}
+        onChange={handleChange}
+        placeholder="SEARCH LOCATION..."
         style={{
-          width: '100%', background: '#161922cc', border: '1px solid #2a2f45',
-          borderRadius: 9, color: '#e8eaf0', padding: '9px 14px', fontSize: 13,
-          backdropFilter: 'blur(12px)', outline: 'none',
-        }} />
+          width: '100%',
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border)',
+          color: 'var(--text-primary)',
+          padding: '10px 14px',
+          fontSize: 12,
+          fontFamily: 'var(--font-mono)',
+          outline: 'none',
+        }}
+      />
+
       {results.length > 0 && (
         <div style={{
-          marginTop: 4, background: '#161922', border: '1px solid #2a2f45',
-          borderRadius: 9, overflow: 'hidden', boxShadow: '0 8px 24px #00000060',
+          marginTop: 0,
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border)',
+          borderTop: 'none',
+          overflow: 'hidden',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
         }}>
           {results.map((r, i) => (
-            <div key={i} onClick={() => select(r)}
+            <div
+              key={i}
+              onClick={() => select(r)}
               style={{
-                padding: '9px 14px', fontSize: 12, cursor: 'pointer', color: '#e8eaf0',
-                borderBottom: i < results.length - 1 ? '1px solid #2a2f4540' : 'none',
+                padding: '10px 14px',
+                fontSize: 11,
+                cursor: 'pointer',
+                color: 'var(--text-secondary)',
+                borderBottom: i < results.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+                fontFamily: 'var(--font-mono)',
               }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#1e2130')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-              {r.display_name.length > 60 ? r.display_name.slice(0, 60) + '...' : r.display_name}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            >
+              {r.display_name.length > 50 ? r.display_name.slice(0, 50) + '...' : r.display_name}
             </div>
           ))}
         </div>

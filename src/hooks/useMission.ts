@@ -1,6 +1,32 @@
 import { useState, useCallback } from 'react';
-import type { MissionConfig, Waypoint, Zone, MissionStats } from '@/types/mission';
+import type { MissionConfig, Waypoint, Zone, MissionStats, SchemaVersion, MissionV2, WaypointV2 } from '@/types/mission';
 import { generateGrid, calcStats } from '@/lib/gridAlgorithm';
+
+// Feature flags for incremental rollout
+const FEATURE_FLAGS = {
+  enableV2Schema: true,
+  enableSegments: false,
+  enableStages: false,
+  enableMultiAction: false,
+  enablePOI: false,
+  enableTerrain: false,
+  enableOffline: false,
+};
+
+// Type guard for v2 mission detection
+function isMissionV2(obj: unknown): obj is MissionV2 {
+  if (typeof obj !== 'object' || obj === null) return false;
+  const mission = obj as Record<string, unknown>;
+  return (
+    'schemaVersion' in mission &&
+    mission.schemaVersion === '2.0' &&
+    'segments' in mission &&
+    Array.isArray(mission.segments)
+  );
+}
+
+// Migration imports (will be used in future)
+// import { migrateV1ToV2 } from '@/lib/migration/v1ToV2';
 
 const DEFAULT_CONFIG: MissionConfig = {
   altitude: 80, speed: 8, overlap: 70,
@@ -13,6 +39,9 @@ export function useMission() {
   const [zones, setZones] = useState<Zone[]>([]);
   const [waypoints, setWaypoints] = useState<Waypoint[]>([]);
   const [stats, setStats] = useState<MissionStats>({ waypointCount: 0, areaSqm: 0, estimatedTimeSec: 0 });
+  const [schemaVersion, setSchemaVersion] = useState<SchemaVersion>('1.0');
+  const [features] = useState(FEATURE_FLAGS);
+  const isFeatureEnabled = useCallback((flag: keyof typeof FEATURE_FLAGS) => !!features[flag], []);
 
   const regenerate = useCallback((zoneList: Zone[], cfg: MissionConfig) => {
     const allWaypoints: Waypoint[] = [];
@@ -64,13 +93,19 @@ export function useMission() {
     setWaypoints(prev => prev.filter(wp => wp.id !== id));
   }, []);
 
-  const setImportedWaypoints = useCallback((wps: Waypoint[]) => {
-    setWaypoints(wps);
+  const setImportedWaypoints = useCallback((wps: Waypoint[] | WaypointV2[]) => {
+    // Detect v2 structure based on presence of actions array
+    const isV2 = (wps as any)[0]?.actions !== undefined;
+    setSchemaVersion(isV2 ? '2.0' : '1.0');
+    setWaypoints(wps as Waypoint[]);
     setStats({ waypointCount: wps.length, areaSqm: 0, estimatedTimeSec: 0 });
   }, []);
 
   return {
     config, zones, waypoints, stats,
+    schemaVersion,
+    features,
+    isFeatureEnabled,
     addZone, removeZone, updateConfig, clearAll, updateWaypoint, removeWaypoint, setImportedWaypoints,
   };
 }

@@ -1,16 +1,39 @@
 @import "tailwindcss";
 
+/* Brutalist / Bloomberg Terminal Inspired Design System */
 :root {
-  --bg-base: #0d0f14;
-  --bg-surface: #161922;
-  --bg-card: #1e2130;
-  --border: #2a2f45;
-  --accent: #60a5fa;
-  --accent-alt: #7c3aed;
-  --success: #22c55e;
-  --warning: #f59e0b;
+  /* Core Palette - Monochromatic Grayscale */
+  --bg-base: #0a0a0a;
+  --bg-surface: #141414;
+  --bg-card: #1a1a1a;
+  --bg-hover: #222222;
+  --bg-active: #2a2a2a;
+  
+  /* Borders - Sharp, distinct */
+  --border: #333333;
+  --border-strong: #444444;
+  --border-subtle: #1f1f1f;
+  
+  /* Text - High contrast hierarchy */
   --text-primary: #ffffff;
-  --text-muted: #6b7280;
+  --text-secondary: #cccccc;
+  --text-muted: #888888;
+  --text-dim: #555555;
+  
+  /* Accent - Minimal, functional */
+  --accent: #ff6b35;
+  --accent-dim: #ff6b3580;
+  --accent-hover: #ff8555;
+  
+  /* Functional Colors - Muted */
+  --success: #4ade80;
+  --success-dim: #4ade8030;
+  --warning: #fbbf24;
+  --warning-dim: #fbbf2430;
+  
+  /* Typography - Technical */
+  --font-mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+  --font-sans: 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -20,20 +43,177 @@ html, body, #root {
   width: 100%;
   background: var(--bg-base);
   color: var(--text-primary);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
+  font-size: 13px;
   overflow: hidden;
 }
 
+/* Map Container */
 .leaflet-container {
   height: 100%;
   width: 100%;
-  background: #0d0f14;
+  background: var(--bg-base);
 }
 
+/* Brutalist Map Tiles - Darker, higher contrast */
+.leaflet-tile {
+  filter: contrast(1.1) brightness(0.9) saturate(0.8);
+}
+
+/* Popups - Sharp corners, no blur */
 .leaflet-popup-content-wrapper {
   background: var(--bg-surface);
   color: var(--text-primary);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
 }
-.leaflet-popup-tip { background: var(--bg-surface); }
+
+.leaflet-popup-tip { 
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+}
+
+.leaflet-popup-content {
+  margin: 8px 12px;
+}
+
+/* Scrollbar - Technical, minimal */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* Form Elements - Brutalist Style */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 2px;
+  background: var(--border);
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--text-primary);
+  cursor: pointer;
+  border: none;
+  border-radius: 0;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: var(--text-primary);
+  cursor: pointer;
+  border: none;
+  border-radius: 0;
+}
+
+input[type="number"],
+input[type="text"],
+select {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 6px 10px;
+  outline: none;
+  transition: border-color 0.1s;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus,
+select:focus {
+  border-color: var(--text-muted);
+}
+
+select {
+  cursor: pointer;
+}
+
+select option {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+/* Buttons - Sharp, technical */
+button {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Utility Classes */
+.font-mono { font-family: var(--font-mono); }
+.font-sans { font-family: var(--font-sans); }
+
+.text-xs { font-size: 11px; }
+.text-sm { font-size: 12px; }
+.text-base { font-size: 13px; }
+.text-lg { font-size: 14px; }
+.text-xl { font-size: 16px; }
+.text-2xl { font-size: 20px; }
+
+.tracking-wider { letter-spacing: 0.05em; }
+.tracking-widest { letter-spacing: 0.1em; }
+
+.uppercase { text-transform: uppercase; }
+
+/* Data Display - Terminal Style */
+.data-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.data-value {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Grid Lines - Technical aesthetic */
+.grid-line {
+  border-color: var(--border-subtle);
+}
+
+/* Section Dividers */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0;
+}
+
+.divider-strong {
+  height: 1px;
+  background: var(--border-strong);
+  margin: 0;
+}

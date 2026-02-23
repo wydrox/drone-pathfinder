@@ -8,44 +8,179 @@ interface Props {
 
 export function ExportPanel({ onExportKmz, onExportGpx, onExportJson, onImport, waypointCount }: Props) {
   const disabled = waypointCount === 0;
-  const btnStyle = (color: string, dis: boolean) => ({
-    width: '100%', padding: '12px 16px', borderRadius: 9, border: `1px solid ${dis ? '#2a2f45' : color + '40'}`,
-    background: dis ? '#1a1d24' : color + '15', color: dis ? '#374151' : color,
-    cursor: dis ? 'not-allowed' : 'pointer', fontSize: 14, fontWeight: 600,
-    textAlign: 'left' as const, marginBottom: 10, transition: 'all 0.15s',
-    display: 'flex', alignItems: 'center', gap: 10,
-  });
+
+  const btnBase = {
+    width: '100%',
+    padding: '12px 16px',
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border)',
+    color: 'var(--text-primary)',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    fontSize: 12,
+    fontWeight: 600,
+    textAlign: 'left' as const,
+    marginBottom: 8,
+    fontFamily: 'var(--font-mono)',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.05em',
+    opacity: disabled ? 0.4 : 1,
+    transition: 'all 0.1s',
+  };
 
   return (
     <div>
+      <div style={{
+        fontFamily: 'var(--font-mono)',
+        fontSize: 10,
+        color: 'var(--text-dim)',
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em',
+        marginBottom: 12,
+        borderBottom: '1px solid var(--border-subtle)',
+        paddingBottom: 8,
+      }}>
+        Export Mission
+      </div>
+
       {disabled && (
-        <div style={{ background: '#1e2130', borderRadius: 8, padding: '10px 12px', marginBottom: 16, color: '#6b7280', fontSize: 12 }}>
-          Draw a zone and generate waypoints first.
+        <div style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          padding: '12px',
+          marginBottom: 16,
+          color: 'var(--text-muted)',
+          fontSize: 11,
+          fontFamily: 'var(--font-mono)',
+        }}>
+          [ WARNING ] No waypoints to export. Draw a zone first.
         </div>
       )}
-      <button style={btnStyle('#4f8ef7', disabled)} onClick={onExportKmz} disabled={disabled}>
-        <span>📦</span> Download KMZ <span style={{ fontSize: 11, marginLeft: 'auto', opacity: 0.7 }}>DJI Fly</span>
-      </button>
-      <button style={btnStyle('#22c55e', disabled)} onClick={onExportGpx} disabled={disabled}>
-        <span>🗺</span> Download GPX <span style={{ fontSize: 11, marginLeft: 'auto', opacity: 0.7 }}>GPS route</span>
-      </button>
-      <button style={btnStyle('#7c3aed', disabled)} onClick={onExportJson} disabled={disabled}>
-        <span>{'{}'}</span> Download JSON <span style={{ fontSize: 11, marginLeft: 'auto', opacity: 0.7 }}>raw data</span>
+
+      <button
+        style={btnBase}
+        onClick={onExportKmz}
+        disabled={disabled}
+        onMouseEnter={e => !disabled && (e.currentTarget.style.borderColor = 'var(--accent)')}
+        onMouseLeave={e => !disabled && (e.currentTarget.style.borderColor = 'var(--border)')}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>KMZ</span>
+          <span style={{ fontSize: 10, color: 'var(--text-dim)', fontWeight: 400 }}>DJI Fly</span>
+        </div>
+        <div style={{
+          fontSize: 10,
+          color: 'var(--text-muted)',
+          fontWeight: 400,
+          marginTop: 4,
+          textTransform: 'none',
+          letterSpacing: 'normal',
+        }}>
+          Waylines.wpml format for DJI drones
+        </div>
       </button>
 
-      <div style={{ marginTop: 24, borderTop: '1px solid #2a2f45', paddingTop: 20 }}>
-        <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 10 }}>Import KMZ</div>
-        <label style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          height: 80, border: '2px dashed #2a2f45', borderRadius: 10, cursor: 'pointer',
-          color: '#6b7280', fontSize: 13, gap: 6, transition: 'border-color 0.15s',
-        }}
-          onDragOver={e => e.preventDefault()}
-          onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) onImport(f); }}>
-          <span style={{ fontSize: 24 }}>📂</span>
-          Drag & drop KMZ or click to browse
-          <input type="file" accept=".kmz" style={{ display: 'none' }}
-            onChange={e => { const f = e.target.files?.[0]; if (f) onImport(f); }} />
+      <button
+        style={btnBase}
+        onClick={onExportGpx}
+        disabled={disabled}
+        onMouseEnter={e => !disabled && (e.currentTarget.style.borderColor = 'var(--success)')}
+        onMouseLeave={e => !disabled && (e.currentTarget.style.borderColor = 'var(--border)')}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>GPX</span>
+          <span style={{ fontSize: 10, color: 'var(--text-dim)', fontWeight: 400 }}>GPS Route</span>
+        </div>
+        <div style={{
+          fontSize: 10,
+          color: 'var(--text-muted)',
+          fontWeight: 400,
+          marginTop: 4,
+          textTransform: 'none',
+          letterSpacing: 'normal',
+        }}>
+          Standard GPS exchange format
+        </div>
+      </button>
+
+      <button
+        style={btnBase}
+        onClick={onExportJson}
+        disabled={disabled}
+        onMouseEnter={e => !disabled && (e.currentTarget.style.borderColor = 'var(--text-secondary)')}
+        onMouseLeave={e => !disabled && (e.currentTarget.style.borderColor = 'var(--border)')}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>JSON</span>
+          <span style={{ fontSize: 10, color: 'var(--text-dim)', fontWeight: 400 }}>Raw Data</span>
+        </div>
+        <div style={{
+          fontSize: 10,
+          color: 'var(--text-muted)',
+          fontWeight: 400,
+          marginTop: 4,
+          textTransform: 'none',
+          letterSpacing: 'normal',
+        }}>
+          Full mission data with metadata
+        </div>
+      </button>
+
+      <div style={{
+        marginTop: 24,
+        borderTop: '1px solid var(--border-subtle)',
+        paddingTop: 20,
+      }}>
+        <div style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: 10,
+          color: 'var(--text-dim)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.1em',
+          marginBottom: 12,
+        }}>
+          Import Mission
+        </div>
+
+        <label
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 80,
+            border: '2px dashed var(--border)',
+            cursor: 'pointer',
+            color: 'var(--text-muted)',
+            fontSize: 12,
+            gap: 8,
+            fontFamily: 'var(--font-mono)',
+            transition: 'border-color 0.1s',
+          }}
+          onDragOver={e => {
+            e.preventDefault();
+            (e.currentTarget as HTMLLabelElement).style.borderColor = 'var(--text-muted)';
+          }}
+          onDragLeave={e => {
+            (e.currentTarget as HTMLLabelElement).style.borderColor = 'var(--border)';
+          }}
+          onDrop={e => {
+            e.preventDefault();
+            (e.currentTarget as HTMLLabelElement).style.borderColor = 'var(--border)';
+            const f = e.dataTransfer.files[0];
+            if (f) onImport(f);
+          }}
+        >
+          <span style={{ fontSize: 10, color: 'var(--text-dim)' }}>[ DROP KMZ FILE ]</span>
+          <span>or click to browse</span>
+          <input
+            type="file"
+            accept=".kmz"
+            style={{ display: 'none' }}
+            onChange={e => {
+              const f = e.target.files?.[0];
+              if (f) onImport(f);
+            }}
+          />
         </label>
       </div>
     </div>
