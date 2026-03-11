@@ -1,25 +1,49 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
-import type { POI, LatLng } from '@/types/mission';
-import { calculateCoverageScore, generateOrbitRings, generateStackedLevels } from '@/lib/poiPhotogrammetry';
+import type { POI, LatLng, WaypointSeed } from '@/types/mission';
+import {
+  calculateCoverageScore,
+  generateOrbitRings,
+  generateStackedOrbitWaypoints,
+} from '@/lib/poiPhotogrammetry';
 
 interface Props {
   pois: POI[];
   onAddPOI: (poi: Omit<POI, 'id'>) => POI;
   onRemovePOI: (id: string) => void;
-  onGenerateWaypoints?: (waypoints: LatLng[]) => void;
+  onGenerateWaypoints?: (waypoints: WaypointSeed[]) => void;
+  onRequestMapPoiLocation?: () => void;
+  mapPoiLocation?: LatLng | null;
+  isPickingMapPoiLocation?: boolean;
 }
 
-export function POIPanel({ pois, onAddPOI, onRemovePOI, onGenerateWaypoints }: Props) {
+export function POIPanel({
+  pois,
+  onAddPOI,
+  onRemovePOI,
+  onGenerateWaypoints,
+  onRequestMapPoiLocation,
+  mapPoiLocation,
+  isPickingMapPoiLocation = false,
+}: Props) {
   const [name, setName] = useState('POI');
-  const [lat, setLat] = useState('52.2297');
-  const [lng, setLng] = useState('21.0122');
+  const [lat, setLat] = useState('');
+  const [lng, setLng] = useState('');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [ringCount, setRingCount] = useState(3);
   const [baseRadius, setBaseRadius] = useState(12);
   const [overlap, setOverlap] = useState(75);
   const [altitude, setAltitude] = useState(40);
   const [photoInterval, setPhotoInterval] = useState(4);
+  const [speed, setSpeed] = useState(5);
+  const [levelCount, setLevelCount] = useState(3);
+  const [levelStep, setLevelStep] = useState(10);
+
+  useEffect(() => {
+    if (!mapPoiLocation) return;
+    setLat(mapPoiLocation.lat.toFixed(6));
+    setLng(mapPoiLocation.lng.toFixed(6));
+  }, [mapPoiLocation]);
 
   const addPoi = () => {
     const latNum = Number(lat);
@@ -33,25 +57,42 @@ export function POIPanel({ pois, onAddPOI, onRemovePOI, onGenerateWaypoints }: P
       category: 'target',
       radiusMeters: baseRadius,
     });
+    setName('POI');
+  };
+
+  const buildBands = () => {
+    const bands: { altitudeMeters: number; overlapPercent: number }[] = [];
+    const clampedLevels = Math.max(1, Math.min(9, levelCount));
+    const centerIdx = Math.floor(clampedLevels / 2);
+
+    for (let i = 0; i < clampedLevels; i++) {
+      const delta = (i - centerIdx) * levelStep;
+      bands.push({
+        altitudeMeters: Math.max(10, altitude + delta),
+        overlapPercent: overlap,
+      });
+    }
+
+    return bands;
   };
 
   const generatePhotogrammetry = (poi: POI) => {
-    const rings = generateOrbitRings(poi, {
-      ringCount,
-      baseRadiusMeters: baseRadius,
-      overlapPercent: overlap,
-      altitudeMeters: altitude,
-      photoIntervalMeters: photoInterval,
-    });
-    const stacked = generateStackedLevels(poi, rings, {
-      bands: [
-        { altitudeMeters: altitude - 10, overlapPercent: overlap },
-        { altitudeMeters: altitude, overlapPercent: overlap },
-        { altitudeMeters: altitude + 10, overlapPercent: overlap },
-      ],
-    });
-    const flat = stacked.flatMap(level => level.points);
-    onGenerateWaypoints?.(flat);
+    const waypoints = generateStackedOrbitWaypoints(
+      poi,
+      {
+        ringCount,
+        baseRadiusMeters: baseRadius,
+        overlapPercent: overlap,
+        altitudeMeters: altitude,
+        photoIntervalMeters: photoInterval,
+      },
+      {
+        bands: buildBands(),
+      },
+      speed,
+    );
+
+    onGenerateWaypoints?.(waypoints);
   };
 
   const coverage = (poi: POI) => {
@@ -75,12 +116,21 @@ export function POIPanel({ pois, onAddPOI, onRemovePOI, onGenerateWaypoints }: P
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', padding: 10, marginBottom: 12 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
           <input value={name} onChange={e => setName(e.target.value)} placeholder="POI name" style={inputStyle} />
-          <button onClick={addPoi} style={buttonStyle}>Add POI</button>
+          <button onClick={() => onRequestMapPoiLocation?.()} style={buttonStyle}>
+            {isPickingMapPoiLocation ? 'Click on map...' : 'Add POI'}
+          </button>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
           <input value={lat} onChange={e => setLat(e.target.value)} placeholder="lat" style={inputStyle} />
           <input value={lng} onChange={e => setLng(e.target.value)} placeholder="lng" style={inputStyle} />
         </div>
+        <button
+          onClick={addPoi}
+          style={{ ...buttonStyle, width: '100%', opacity: Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)) ? 1 : 0.5 }}
+          disabled={!Number.isFinite(Number(lat)) || !Number.isFinite(Number(lng))}
+        >
+          Save POI
+        </button>
       </div>
 
       {pois.length === 0 ? (
@@ -106,13 +156,16 @@ export function POIPanel({ pois, onAddPOI, onRemovePOI, onGenerateWaypoints }: P
 
                 {isOpen && (
                   <div style={{ marginTop: 10, borderTop: '1px solid var(--border)', paddingTop: 10 }}>
-                    <div style={{ fontSize: 10, color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: 8 }}>360 Model (Multi-level)</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: 8 }}>360 Model (Multi-level, camera locked on POI)</div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                      <label style={labelStyle}>Rings <input type="number" min={1} max={6} value={ringCount} onChange={e => setRingCount(Number(e.target.value))} style={inputStyle} /></label>
-                      <label style={labelStyle}>Radius <input type="number" min={4} max={60} value={baseRadius} onChange={e => setBaseRadius(Number(e.target.value))} style={inputStyle} /></label>
+                      <label style={labelStyle}>Rings <input type="number" min={1} max={8} value={ringCount} onChange={e => setRingCount(Number(e.target.value))} style={inputStyle} /></label>
+                      <label style={labelStyle}>Radius <input type="number" min={4} max={80} value={baseRadius} onChange={e => setBaseRadius(Number(e.target.value))} style={inputStyle} /></label>
                       <label style={labelStyle}>Overlap <input type="number" min={50} max={90} value={overlap} onChange={e => setOverlap(Number(e.target.value))} style={inputStyle} /></label>
-                      <label style={labelStyle}>Altitude <input type="number" min={10} max={200} value={altitude} onChange={e => setAltitude(Number(e.target.value))} style={inputStyle} /></label>
+                      <label style={labelStyle}>Base Alt <input type="number" min={10} max={300} value={altitude} onChange={e => setAltitude(Number(e.target.value))} style={inputStyle} /></label>
+                      <label style={labelStyle}>Alt Levels <input type="number" min={1} max={9} value={levelCount} onChange={e => setLevelCount(Number(e.target.value))} style={inputStyle} /></label>
+                      <label style={labelStyle}>Alt Step <input type="number" min={2} max={50} value={levelStep} onChange={e => setLevelStep(Number(e.target.value))} style={inputStyle} /></label>
                       <label style={labelStyle}>Interval <input type="number" min={2} max={20} value={photoInterval} onChange={e => setPhotoInterval(Number(e.target.value))} style={inputStyle} /></label>
+                      <label style={labelStyle}>Speed <input type="number" min={1} max={15} value={speed} onChange={e => setSpeed(Number(e.target.value))} style={inputStyle} /></label>
                     </div>
                     <button onClick={() => generatePhotogrammetry(poi)} style={{ ...buttonStyle, marginTop: 10, width: '100%' }}>Generate Multi-level Orbit</button>
                     {c.blindSpots.length > 0 && <div style={{ fontSize: 11, color: '#f59e0b', marginTop: 6 }}>Blind spots detected: {c.blindSpots.length}</div>}

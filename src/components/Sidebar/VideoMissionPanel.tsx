@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import type { LatLng } from '@/types/mission';
+import type { LatLng, WaypointSeed } from '@/types/mission';
 import { generateSpiralPath, generateHelixPath, generateGoldenRatioPath } from '@/lib/pathGenerators';
 
 interface Props {
-  onGenerateWaypoints: (waypoints: LatLng[]) => void;
+  onGenerateWaypoints: (waypoints: WaypointSeed[]) => void;
   center?: LatLng | null;
   onSetCenterFromMap?: () => void;
   onUseMapCenter?: () => void;
@@ -21,6 +21,16 @@ export function VideoMissionPanel({ onGenerateWaypoints, center: externalCenter 
   const [duration, setDuration] = useState(30);
   const [startHeading, setStartHeading] = useState(0);
   const [isSettingCenter, setIsSettingCenter] = useState(false);
+
+  const toHeading = (from: LatLng, to: LatLng): number => {
+    const lat1 = (from.lat * Math.PI) / 180;
+    const lat2 = (to.lat * Math.PI) / 180;
+    const dLng = ((to.lng - from.lng) * Math.PI) / 180;
+    const y = Math.sin(dLng) * Math.cos(lat2);
+    const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+    const bearing = (Math.atan2(y, x) * 180) / Math.PI;
+    return ((bearing % 360) + 360) % 360;
+  };
 
   useEffect(() => {
     if (isSettingCenter) {
@@ -70,7 +80,16 @@ export function VideoMissionPanel({ onGenerateWaypoints, center: externalCenter 
       lng: center.lng,
     };
 
-    onGenerateWaypoints([startPoint, ...sorted]);
+    const generated: WaypointSeed[] = [startPoint, ...sorted].map((point) => ({
+      lat: point.lat,
+      lng: point.lng,
+      altitude,
+      speed,
+      heading: center ? toHeading(point, center) : ((startHeading % 360) + 360) % 360,
+      action: 'none',
+    }));
+
+    onGenerateWaypoints(generated);
   };
 
   const modeInfo = {

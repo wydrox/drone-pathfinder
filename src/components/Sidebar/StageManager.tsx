@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { MissionV2, BatteryConfig } from '@/types/mission';
 import { 
   calculateBatteryRequirement, 
   splitMissionIntoStages, 
   generateResumeToken,
-  DEFAULT_BATTERY_CONFIG 
+  DJI_BATTERY_PROFILES,
+  getBatteryConfigForDroneModel,
+  getBatteryProfileForDroneModel,
 } from '@/lib/missionStages';
 import type { MissionConfig } from '@/types/mission';
 
@@ -15,8 +17,41 @@ interface Props {
 }
 
 export function StageManager({ mission, config, waypoints = [] }: Props) {
-  const [batteryConfig, setBatteryConfig] = useState<BatteryConfig>(DEFAULT_BATTERY_CONFIG);
+  const [selectedProfileId, setSelectedProfileId] = useState<string>(() => {
+    if (typeof window === 'undefined') return getBatteryProfileForDroneModel(config?.droneModel).id;
+    return window.localStorage.getItem('drone-pathfinder:battery-profile-id') || getBatteryProfileForDroneModel(config?.droneModel).id;
+  });
+  const [batteryConfig, setBatteryConfig] = useState<BatteryConfig>(() => {
+    if (typeof window === 'undefined') return getBatteryConfigForDroneModel(config?.droneModel);
+    const raw = window.localStorage.getItem('drone-pathfinder:battery-config');
+    if (!raw) return getBatteryConfigForDroneModel(config?.droneModel);
+    try {
+      const parsed = JSON.parse(raw) as BatteryConfig;
+      if (parsed && Number.isFinite(parsed.capacityMah) && Number.isFinite(parsed.voltage)) {
+        return parsed;
+      }
+    } catch {
+      return getBatteryConfigForDroneModel(config?.droneModel);
+    }
+    return getBatteryConfigForDroneModel(config?.droneModel);
+  });
   const [showConfig, setShowConfig] = useState(false);
+
+  useEffect(() => {
+    if (!config?.droneModel) return;
+    const profile = getBatteryProfileForDroneModel(config.droneModel);
+    setSelectedProfileId(profile.id);
+    setBatteryConfig(prev => ({
+      ...prev,
+      ...profile.battery,
+    }));
+  }, [config?.droneModel]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('drone-pathfinder:battery-profile-id', selectedProfileId);
+    window.localStorage.setItem('drone-pathfinder:battery-config', JSON.stringify(batteryConfig));
+  }, [selectedProfileId, batteryConfig]);
 
   const stages = mission && config 
     ? splitMissionIntoStages(mission, batteryConfig)
@@ -135,6 +170,53 @@ export function StageManager({ mission, config, waypoints = [] }: Props) {
           marginBottom: 16,
           borderRadius: 6,
         }}>
+          <div style={{ marginBottom: 12 }}>
+            <label style={{
+              fontSize: 10,
+              color: 'var(--text-dim)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              fontFamily: 'var(--font-mono)',
+              display: 'block',
+              marginBottom: 6,
+            }}>
+              DJI Battery Profile (Official)
+            </label>
+            <select
+              value={selectedProfileId}
+              onChange={(e) => {
+                const profile = DJI_BATTERY_PROFILES.find(p => p.id === e.target.value) || DJI_BATTERY_PROFILES[0];
+                setSelectedProfileId(profile.id);
+                setBatteryConfig(prev => ({
+                  ...prev,
+                  ...profile.battery,
+                }));
+              }}
+              style={{
+                width: '100%',
+                padding: '8px 10px',
+                background: 'var(--bg-base)',
+                border: '1px solid var(--border)',
+                color: 'var(--text-primary)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: 11,
+              }}
+            >
+              {DJI_BATTERY_PROFILES.map(profile => (
+                <option key={profile.id} value={profile.id}>{profile.label}</option>
+              ))}
+            </select>
+            <div style={{
+              marginTop: 6,
+              color: 'var(--text-muted)',
+              fontSize: 10,
+              fontFamily: 'var(--font-mono)',
+              wordBreak: 'break-all',
+            }}>
+              Source: {(DJI_BATTERY_PROFILES.find(p => p.id === selectedProfileId) || DJI_BATTERY_PROFILES[0]).source}
+            </div>
+          </div>
+
           {[
             { key: 'capacityMah', label: 'Capacity', min: 1000, max: 10000, unit: 'mAh', step: 100 },
             { key: 'voltage', label: 'Voltage', min: 7.4, max: 25.2, unit: 'V', step: 0.1 },

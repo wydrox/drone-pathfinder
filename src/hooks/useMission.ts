@@ -49,7 +49,14 @@ export function useMission() {
     const allWaypoints: Waypoint[] = [];
     let globalIdx = 0;
     for (const zone of zoneList) {
-      const wps = generateGrid(zone.points, cfg).map(wp => ({ ...wp, index: globalIdx++ }));
+      const wps = generateGrid(zone.points, cfg).map(wp => {
+        const nextIndex = globalIdx++;
+        return {
+          ...wp,
+          id: `${zone.id}-wp-${nextIndex}`,
+          index: nextIndex,
+        };
+      });
       allWaypoints.push(...wps);
     }
     const allPoints = zoneList.flatMap(z => z.points);
@@ -151,17 +158,31 @@ export function useMission() {
   }, [saveState, history.present.config]);
 
   const updateWaypoint = useCallback((id: string, changes: Partial<Waypoint>) => {
-    saveState(prev => ({
-      ...prev,
-      waypoints: prev.waypoints.map(wp => wp.id === id ? { ...wp, ...changes } : wp),
-    }));
+    saveState(prev => {
+      const newWaypoints = prev.waypoints.map(wp => (wp.id === id ? { ...wp, ...changes } : wp));
+      const allPoints = prev.zones.flatMap(z => z.points);
+      const newStats = calcStats(newWaypoints, allPoints.length ? allPoints : [], prev.config);
+      return {
+        ...prev,
+        waypoints: newWaypoints,
+        stats: newStats,
+      };
+    });
   }, [saveState]);
 
   const removeWaypoint = useCallback((id: string) => {
-    saveState(prev => ({
-      ...prev,
-      waypoints: prev.waypoints.filter(wp => wp.id !== id),
-    }));
+    saveState(prev => {
+      const newWaypoints = prev.waypoints
+        .filter(wp => wp.id !== id)
+        .map((wp, index) => ({ ...wp, index }));
+      const allPoints = prev.zones.flatMap(z => z.points);
+      const newStats = calcStats(newWaypoints, allPoints.length ? allPoints : [], prev.config);
+      return {
+        ...prev,
+        waypoints: newWaypoints,
+        stats: newStats,
+      };
+    });
   }, [saveState]);
 
   const appendWaypoints = useCallback((wps: Waypoint[]) => {
@@ -199,8 +220,14 @@ export function useMission() {
             altitude: wp.altitude,
             index: wp.index,
             action: wp.actions.some(a => a.type === 'photo') ? 'photo' : 'none',
+            speed: wp.speed,
+            heading: wp.heading,
           }))
-        : wps as Waypoint[],
+        : (wps as Waypoint[]).map(wp => ({
+            ...wp,
+            speed: wp.speed ?? prev.config.speed,
+            heading: wp.heading ?? prev.config.direction,
+          })),
       stats: { waypointCount: wps.length, areaSqm: 0, estimatedTimeSec: 0 },
     }));
   }, [saveState]);

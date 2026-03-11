@@ -60,6 +60,8 @@ export function generateGrid(points: LatLng[], config: MissionConfig): Waypoint[
             altitude: config.altitude,
             index: idx,
             action: config.photoCapture ? 'photo' : 'none',
+            speed: config.speed,
+            heading: config.direction,
           });
           idx++;
         }
@@ -88,6 +90,8 @@ export function generateGrid(points: LatLng[], config: MissionConfig): Waypoint[
             altitude: config.altitude,
             index: idx,
             action: config.photoCapture ? 'photo' : 'none',
+            speed: config.speed,
+            heading: config.direction,
           });
           idx++;
         }

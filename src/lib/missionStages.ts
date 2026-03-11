@@ -9,13 +9,83 @@ export interface BatteryConfig {
   cruiseCurrentAmps: number;
 }
 
-export const DEFAULT_BATTERY_CONFIG: BatteryConfig = {
-  capacityMah: 5000,
-  voltage: 11.1,
+export interface BatteryProfile {
+  id: string;
+  label: string;
+  battery: Pick<BatteryConfig, 'capacityMah' | 'voltage'>;
+  source: string;
+}
+
+export const DJI_BATTERY_PROFILES: BatteryProfile[] = [
+  {
+    id: 'DJI Mini 4 Pro',
+    label: 'DJI Mini 4 Pro (Intelligent Flight Battery)',
+    battery: { capacityMah: 2590, voltage: 7.32 },
+    source: 'https://repair.dji.com/help/content?customId=en-us03400006564&lang=en&re=US&spaceId=34',
+  },
+  {
+    id: 'DJI Mini 5 Pro',
+    label: 'DJI Mini 5 Pro (Intelligent Flight Battery)',
+    battery: { capacityMah: 2788, voltage: 7.0 },
+    source: 'https://repair.dji.com/help/content?customId=en-us03400006564&lang=en&re=US&spaceId=34',
+  },
+  {
+    id: 'DJI Mavic 4 Pro',
+    label: 'DJI Mavic 4 Pro (Intelligent Flight Battery)',
+    battery: { capacityMah: 6654, voltage: 14.32 },
+    source: 'https://repair.dji.com/help/content?customId=en-us03400006564&lang=en&re=US&spaceId=34',
+  },
+  {
+    id: 'DJI Mavic 3',
+    label: 'DJI Mavic 3 / 3 Pro (Intelligent Flight Battery)',
+    battery: { capacityMah: 5000, voltage: 15.4 },
+    source: 'https://repair.dji.com/help/content?customId=en-us03400006564&lang=en&re=US&spaceId=34',
+  },
+  {
+    id: 'DJI Air 3',
+    label: 'DJI Air 3 (Intelligent Flight Battery)',
+    battery: { capacityMah: 4241, voltage: 14.76 },
+    source: 'https://repair.dji.com/help/content?customId=en-us03400006564&lang=en&re=US&spaceId=34',
+  },
+  {
+    id: 'DJI Air 3S',
+    label: 'DJI Air 3S (Intelligent Flight Battery)',
+    battery: { capacityMah: 4276, voltage: 14.6 },
+    source: 'https://repair.dji.com/help/content?customId=en-us03400006564&lang=en&re=US&spaceId=34',
+  },
+];
+
+const BASE_BATTERY_CONFIG: Pick<BatteryConfig, 'reservePercent' | 'hoverCurrentAmps' | 'cruiseCurrentAmps'> = {
   reservePercent: 20,
   hoverCurrentAmps: 15,
   cruiseCurrentAmps: 10,
 };
+
+export function getBatteryProfileForDroneModel(droneModel?: string): BatteryProfile {
+  if (!droneModel) {
+    return DJI_BATTERY_PROFILES[0];
+  }
+
+  const normalized = droneModel.toLowerCase();
+
+  if (normalized.includes('mavic 4')) return DJI_BATTERY_PROFILES.find(p => p.id === 'DJI Mavic 4 Pro')!;
+  if (normalized.includes('mavic 3')) return DJI_BATTERY_PROFILES.find(p => p.id === 'DJI Mavic 3')!;
+  if (normalized.includes('air 3s')) return DJI_BATTERY_PROFILES.find(p => p.id === 'DJI Air 3S')!;
+  if (normalized.includes('air 3')) return DJI_BATTERY_PROFILES.find(p => p.id === 'DJI Air 3')!;
+  if (normalized.includes('mini 5')) return DJI_BATTERY_PROFILES.find(p => p.id === 'DJI Mini 5 Pro')!;
+
+  return DJI_BATTERY_PROFILES.find(p => p.id === 'DJI Mini 4 Pro')!;
+}
+
+export function getBatteryConfigForDroneModel(droneModel?: string): BatteryConfig {
+  const profile = getBatteryProfileForDroneModel(droneModel);
+  return {
+    ...profile.battery,
+    ...BASE_BATTERY_CONFIG,
+  };
+}
+
+export const DEFAULT_BATTERY_CONFIG: BatteryConfig = getBatteryConfigForDroneModel('DJI Mini 4 Pro');
 
 export function calculateBatteryRequirement(
   waypoints: WaypointV2[],

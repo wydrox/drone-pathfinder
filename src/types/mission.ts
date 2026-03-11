@@ -3,6 +3,13 @@ export interface LatLng {
   lng: number;
 }
 
+export interface WaypointSeed extends LatLng {
+  altitude?: number;
+  speed?: number;
+  heading?: number;
+  action?: 'photo' | 'none';
+}
+
 export interface Waypoint {
   id: string;
   lat: number;
@@ -10,6 +17,8 @@ export interface Waypoint {
   altitude: number;
   index: number;
   action: 'photo' | 'none';
+  speed?: number;
+  heading?: number;
 }
 
 export interface Zone {

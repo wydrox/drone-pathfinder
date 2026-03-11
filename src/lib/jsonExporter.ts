@@ -12,6 +12,8 @@ export function exportJson(waypoints: Waypoint[], config: MissionConfig, stats: 
       lng: wp.lng,
       altitude: wp.altitude,
       action: wp.action,
+      speed: wp.speed,
+      heading: wp.heading,
     })),
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });

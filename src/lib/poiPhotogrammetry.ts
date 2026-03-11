@@ -1,5 +1,6 @@
 import type { POI } from '@/types/mission';
 import type { LatLng } from '@/types/mission';
+import type { WaypointSeed } from '@/types/mission';
 
 export interface OrbitConfig {
   ringCount: number;
@@ -73,4 +74,45 @@ export function calculateCoverageScore(
   }
   
   return { score, blindSpots };
+}
+
+function normalizeHeading(angle: number): number {
+  return ((angle % 360) + 360) % 360;
+}
+
+function bearingToTarget(from: LatLng, to: LatLng): number {
+  const lat1 = (from.lat * Math.PI) / 180;
+  const lat2 = (to.lat * Math.PI) / 180;
+  const dLng = ((to.lng - from.lng) * Math.PI) / 180;
+
+  const y = Math.sin(dLng) * Math.cos(lat2);
+  const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+  const brng = (Math.atan2(y, x) * 180) / Math.PI;
+
+  if (!Number.isFinite(brng)) {
+    return 0;
+  }
+
+  return normalizeHeading(brng);
+}
+
+export function generateStackedOrbitWaypoints(
+  poi: POI,
+  orbitConfig: OrbitConfig,
+  stackedConfig: StackedLevelConfig,
+  speedMps: number,
+): WaypointSeed[] {
+  const baseRings = generateOrbitRings(poi, orbitConfig);
+  const levels = generateStackedLevels(poi, baseRings, stackedConfig);
+
+  return levels.flatMap(level =>
+    level.points.map((point): WaypointSeed => ({
+      lat: point.lat,
+      lng: point.lng,
+      altitude: level.altitude,
+      speed: speedMps,
+      heading: bearingToTarget(point, poi),
+      action: 'photo',
+    }))
+  );
 }
