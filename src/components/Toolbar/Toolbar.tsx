@@ -12,6 +12,7 @@ interface Props {
   onRedo?: () => void;
   canUndo?: boolean;
   canRedo?: boolean;
+  isMobile?: boolean;
 }
 
 interface SearchResult {
@@ -20,21 +21,22 @@ interface SearchResult {
   lon: string;
 }
 
-const btn = (active: boolean) => ({
-  padding: '8px 16px',
+const btn = (active: boolean, compact = false) => ({
+  padding: compact ? '8px 10px' : '8px 16px',
   background: active ? 'var(--bg-card)' : 'transparent',
   border: `1px solid ${active ? 'var(--text-primary)' : 'var(--border)'}`,
   color: active ? 'var(--text-primary)' : 'var(--text-muted)',
   cursor: 'pointer',
-  fontSize: 11,
+  fontSize: compact ? 14 : 11,
   fontWeight: active ? 600 : 400,
   fontFamily: 'var(--font-mono)',
   textTransform: 'uppercase' as const,
   letterSpacing: '0.05em',
   transition: 'all 0.1s',
+  flexShrink: 0 as const,
 });
 
-export function Toolbar({ drawMode, setMode, onClear, waypointCount, map, onUndo, onRedo, canUndo, canRedo }: Props) {
+export function Toolbar({ drawMode, setMode, onClear, waypointCount, map, onUndo, onRedo, canUndo, canRedo, isMobile = false }: Props) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [showSearch, setShowSearch] = useState(false);
@@ -73,107 +75,109 @@ export function Toolbar({ drawMode, setMode, onClear, waypointCount, map, onUndo
       alignItems: 'center',
       background: 'var(--bg-surface)',
       borderBottom: '1px solid var(--border)',
-      padding: '10px 16px',
+      padding: isMobile ? '8px 10px' : '10px 16px',
+      minWidth: 0,
+      overflow: 'hidden',
     }}>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        marginRight: 24,
-        flexShrink: 0,
-      }}>
-        <img 
-          src="/logo.svg" 
-          alt="Drone Pathfinder" 
-          style={{ 
-            height: 28, 
-            width: 'auto',
-            color: 'var(--text-primary)',
-          }} 
-        />
-        <span style={{
-          color: 'var(--text-primary)',
-          fontWeight: 700,
-          fontSize: 13,
-          fontFamily: 'var(--font-mono)',
-          letterSpacing: '0.02em',
+      {/* Logo / branding — hidden on mobile to save space */}
+      {!isMobile && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          marginRight: 24,
+          flexShrink: 0,
         }}>
-          DRONE PATHFINDER
-        </span>
-      </div>
+          <img
+            src="/logo.svg"
+            alt="Drone Pathfinder"
+            style={{ height: 28, width: 'auto', color: 'var(--text-primary)' }}
+          />
+          <span style={{
+            color: 'var(--text-primary)',
+            fontWeight: 700,
+            fontSize: 13,
+            fontFamily: 'var(--font-mono)',
+            letterSpacing: '0.02em',
+          }}>
+            DRONE PATHFINDER
+          </span>
+        </div>
+      )}
 
+      {/* Draw mode buttons */}
       <div style={{ display: 'flex', gap: 0, flexShrink: 0 }}>
         <button
-          style={btn(drawMode === 'polygon')}
+          style={btn(drawMode === 'polygon', isMobile)}
           onClick={() => setMode(drawMode === 'polygon' ? 'none' : 'polygon')}
+          title="Polygon (P)"
         >
-          Polygon [P]
+          {isMobile ? '⬡' : 'Polygon [P]'}
         </button>
-        
         <button
-          style={btn(drawMode === 'rectangle')}
+          style={btn(drawMode === 'rectangle', isMobile)}
           onClick={() => setMode(drawMode === 'rectangle' ? 'none' : 'rectangle')}
+          title="Rectangle (R)"
         >
-          Rectangle [R]
+          {isMobile ? '▭' : 'Rectangle [R]'}
         </button>
       </div>
 
+      {/* Waypoint actions */}
       {waypointCount > 0 && (
         <>
           <div style={{
             width: 1,
             height: 20,
             background: 'var(--border)',
-            margin: '0 16px',
+            margin: isMobile ? '0 6px' : '0 16px',
             flexShrink: 0,
           }} />
-          
+
           <button
             style={{
-              ...btn(false),
+              ...btn(false, isMobile),
               color: 'var(--warning)',
               borderColor: 'var(--warning)',
-              flexShrink: 0,
             }}
             onClick={onClear}
+            title="Clear All"
           >
-            Clear All
+            {isMobile ? '✕' : 'Clear All'}
           </button>
-          
+
           {onUndo && onRedo && (
             <>
               <div style={{
                 width: 1,
                 height: 20,
                 background: 'var(--border)',
-                margin: '0 16px',
+                margin: isMobile ? '0 6px' : '0 16px',
                 flexShrink: 0,
               }} />
-              
               <button
                 style={{
-                  ...btn(false),
+                  ...btn(false, isMobile),
                   opacity: canUndo ? 1 : 0.4,
                   cursor: canUndo ? 'pointer' : 'not-allowed',
-                  flexShrink: 0,
                 }}
                 onClick={onUndo}
                 disabled={!canUndo}
+                title="Undo (Ctrl+Z)"
               >
-                Undo [Ctrl+Z]
+                {isMobile ? '↩' : 'Undo [Ctrl+Z]'}
               </button>
-              
               <button
                 style={{
-                  ...btn(false),
+                  ...btn(false, isMobile),
                   opacity: canRedo ? 1 : 0.4,
                   cursor: canRedo ? 'pointer' : 'not-allowed',
-                  flexShrink: 0,
                 }}
                 onClick={onRedo}
                 disabled={!canRedo}
+                title="Redo (Ctrl+Y)"
               >
-                Redo [Ctrl+Y]
+                {isMobile ? '↪' : 'Redo [Ctrl+Y]'}
               </button>
             </>
           )}
@@ -182,7 +186,8 @@ export function Toolbar({ drawMode, setMode, onClear, waypointCount, map, onUndo
 
       <div style={{ flex: 1 }} />
 
-      <div style={{ position: 'relative', width: 280 }}>
+      {/* Location search */}
+      <div style={{ position: 'relative', width: isMobile ? 140 : 280, flexShrink: 0 }}>
         {!showSearch ? (
           <button
             onClick={() => setShowSearch(true)}
@@ -190,7 +195,7 @@ export function Toolbar({ drawMode, setMode, onClear, waypointCount, map, onUndo
               background: 'var(--bg-card)',
               border: '1px solid var(--border)',
               color: 'var(--text-muted)',
-              padding: '8px 16px',
+              padding: isMobile ? '8px 10px' : '8px 16px',
               cursor: 'pointer',
               fontSize: 11,
               fontFamily: 'var(--font-mono)',
@@ -198,7 +203,7 @@ export function Toolbar({ drawMode, setMode, onClear, waypointCount, map, onUndo
               textAlign: 'left',
             }}
           >
-            Search location...
+            {isMobile ? '🔍' : 'Search location...'}
           </button>
         ) : (
           <>
@@ -212,7 +217,7 @@ export function Toolbar({ drawMode, setMode, onClear, waypointCount, map, onUndo
                 background: 'var(--bg-card)',
                 border: '1px solid var(--border)',
                 color: 'var(--text-primary)',
-                padding: '8px 16px',
+                padding: '8px 32px 8px 10px',
                 fontSize: 11,
                 fontFamily: 'var(--font-mono)',
                 outline: 'none',
@@ -226,7 +231,7 @@ export function Toolbar({ drawMode, setMode, onClear, waypointCount, map, onUndo
               }}
               style={{
                 position: 'absolute',
-                right: 8,
+                right: 6,
                 top: '50%',
                 transform: 'translateY(-50%)',
                 background: 'none',
@@ -234,7 +239,7 @@ export function Toolbar({ drawMode, setMode, onClear, waypointCount, map, onUndo
                 color: 'var(--text-muted)',
                 cursor: 'pointer',
                 fontSize: 14,
-                padding: '4px 8px',
+                padding: '2px 4px',
               }}
             >
               ×
@@ -277,7 +282,7 @@ export function Toolbar({ drawMode, setMode, onClear, waypointCount, map, onUndo
         )}
       </div>
 
-      {drawMode !== 'none' && (
+      {drawMode !== 'none' && !isMobile && (
         <span style={{
           color: 'var(--text-muted)',
           fontSize: 11,

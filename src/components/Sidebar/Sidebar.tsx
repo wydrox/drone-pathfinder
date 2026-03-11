@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import type { MissionConfig as MConfig, MissionStats, Waypoint, POI, MissionV2, LatLng } from '@/types/mission';
+import { useEffect, useState } from 'react';
+import type { MissionConfig as MConfig, MissionStats, Waypoint, POI, MissionV2, LatLng, WaypointSeed } from '@/types/mission';
 import { MissionConfig } from './MissionConfig';
 import { WaypointList } from './WaypointList';
 import { ExportPanel } from './ExportPanel';
@@ -24,6 +24,8 @@ interface Props {
   mapStyles: MapStyle[];
   currentMapStyleId: string;
   onMapStyleChange: (id: string) => void;
+  selectedWaypointId: string | null;
+  onSelectWaypoint: (id: string | null) => void;
   poiManager: {
     pois: POI[];
     addPOI: (poi: Omit<POI, 'id'>) => POI;
@@ -31,12 +33,17 @@ interface Props {
   };
   layerVisibility: LayerVisibilityConfig;
   onLayerVisibilityChange: (layer: keyof LayerVisibilityConfig) => void;
-  onGenerateVideoWaypoints?: (waypoints: LatLng[]) => void;
+  onGenerateVideoWaypoints?: (waypoints: WaypointSeed[]) => void;
   onSetVideoCenter?: () => void;
   onUseMapCenterForVideo?: () => void;
   videoCenter?: LatLng | null;
+  onRequestMapPoiLocation?: () => void;
+  mapPoiLocation?: LatLng | null;
+  isPickingMapPoiLocation?: boolean;
   missionV2?: MissionV2;
   mapCenter?: LatLng;
+  /** When true the sidebar renders in drawer mode (no fixed width, no height constraints) */
+  isMobile?: boolean;
 }
 
 type Tab = 'config' | 'waypoints' | 'pois' | 'layers' | 'video' | 'stages' | 'offline' | 'export';
@@ -45,10 +52,18 @@ export function Sidebar(props: Props) {
   const [tab, setTab] = useState<Tab>('config');
   const [showHelp, setShowHelp] = useState(true);
 
+  useEffect(() => {
+    if (props.selectedWaypointId) {
+      setTab('waypoints');
+    }
+  }, [props.selectedWaypointId]);
+
+  const { isMobile = false } = props;
+
   const tabStyle = (t: Tab) => ({
-    padding: '8px 6px',
+    padding: isMobile ? '10px 4px' : '8px 6px',
     textAlign: 'center' as const,
-    fontSize: 9,
+    fontSize: isMobile ? 10 : 9,
     fontWeight: tab === t ? 600 : 400,
     color: tab === t ? 'var(--text-primary)' : 'var(--text-muted)',
     background: tab === t ? 'var(--bg-card)' : 'transparent',
@@ -80,31 +95,33 @@ export function Sidebar(props: Props) {
 
   return (
     <div style={{
-      width: 320,
-      minWidth: 320,
+      width: isMobile ? '100%' : 320,
+      minWidth: isMobile ? 0 : 320,
       background: 'var(--bg-surface)',
-      borderLeft: '1px solid var(--border)',
+      borderLeft: isMobile ? 'none' : '1px solid var(--border)',
       display: 'flex',
       flexDirection: 'column',
-      height: '100vh',
+      height: isMobile ? '100%' : '100vh',
       overflow: 'hidden',
     }}>
       <div style={{
-        padding: '16px 16px 0',
+        padding: isMobile ? '8px 12px 0' : '16px 16px 0',
         borderBottom: '1px solid var(--border)',
         background: 'var(--bg-surface)',
       }}>
-        <div style={{
-          fontFamily: 'var(--font-mono)',
-          fontSize: 14,
-          fontWeight: 700,
-          color: 'var(--text-primary)',
-          marginBottom: 12,
-          letterSpacing: '0.02em',
-        }}>
-          DRONE PATHFINDER
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 0 }}>
+        {!isMobile && (
+          <div style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: 14,
+            fontWeight: 700,
+            color: 'var(--text-primary)',
+            marginBottom: 12,
+            letterSpacing: '0.02em',
+          }}>
+            DRONE PATHFINDER
+          </div>
+        )}
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${isMobile ? 4 : 4}, minmax(0, 1fr))`, gap: 0, overflowX: 'auto' }}>
           {tabs.map(t => (
             <button
               key={t}
@@ -212,6 +229,8 @@ export function Sidebar(props: Props) {
             waypoints={props.waypoints}
             onUpdate={props.onUpdateWaypoint}
             onRemove={props.onRemoveWaypoint}
+            selectedWaypointId={props.selectedWaypointId}
+            onSelect={props.onSelectWaypoint}
           />
         )}
         
@@ -221,6 +240,9 @@ export function Sidebar(props: Props) {
             onAddPOI={props.poiManager.addPOI}
             onRemovePOI={props.poiManager.removePOI}
             onGenerateWaypoints={props.onGenerateVideoWaypoints}
+            onRequestMapPoiLocation={props.onRequestMapPoiLocation}
+            mapPoiLocation={props.mapPoiLocation}
+            isPickingMapPoiLocation={props.isPickingMapPoiLocation}
           />
         )}
         
@@ -265,20 +287,22 @@ export function Sidebar(props: Props) {
         )}
       </div>
 
-      <div style={{
-        padding: '10px 16px',
-        borderTop: '1px solid var(--border)',
-        background: 'var(--bg-surface)',
-        fontFamily: 'var(--font-mono)',
-        fontSize: 10,
-        color: 'var(--text-dim)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}>
-        <span>v2.0.0</span>
-        <span>WARSAW • 52.23°N 21.01°E</span>
-      </div>
+      {!isMobile && (
+        <div style={{
+          padding: '10px 16px',
+          borderTop: '1px solid var(--border)',
+          background: 'var(--bg-surface)',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 10,
+          color: 'var(--text-dim)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}>
+          <span>v2.0.0</span>
+          <span>WARSAW • 52.23°N 21.01°E</span>
+        </div>
+      )}
     </div>
   );
 }

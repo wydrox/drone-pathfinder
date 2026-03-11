@@ -217,3 +217,52 @@ button:disabled {
   background: var(--border-strong);
   margin: 0;
 }
+
+
+/* ── Mobile-first responsive helpers ─────────────────────────────────────── */
+
+/* Prevent zoom on double-tap for interactive elements on iOS */
+button, input, select, label {
+  touch-action: manipulation;
+}
+
+/* Smooth momentum scrolling for scrollable panels on iOS */
+.panel-scroll {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+
+/* Use the full dynamic viewport height on mobile browsers (accounts for URL bar) */
+@supports (height: 100dvh) {
+  html, body, #root {
+    height: 100dvh;
+  }
+}
+
+/* Sidebar scroll area inside the drawer */
+@media (max-width: 767px) {
+  /* Slightly larger tap targets on mobile */
+  button {
+    min-height: 36px;
+  }
+
+  /* Prevent iOS rubber-band scroll on the root */
+  body {
+    overscroll-behavior: none;
+  }
+
+  /* Make range inputs easier to tap */
+  input[type="range"] {
+    height: 20px;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    width: 20px;
+    height: 20px;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+  }
+}
