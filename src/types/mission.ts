@@ -33,6 +33,8 @@ export interface MissionConfig {
   overlap: number;
   direction: number;
   cameraAngle: number;
+  waypointOrientationMode: 'manual' | 'poi';
+  waypointOrientationPoiId?: string;
   travelAxis: 'NS' | 'EW';
   photoCapture: boolean;
   terrainAware: boolean;
