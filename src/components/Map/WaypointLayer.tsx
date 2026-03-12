@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
-import type { Waypoint } from '@/types/mission';
+import type { MissionConfig, POI, Waypoint } from '@/types/mission';
+import { resolveWaypointOrientation } from '@/lib/waypointOrientation';
 
 interface Props {
   map: L.Map | null;
@@ -8,6 +9,8 @@ interface Props {
   selectedWaypointId?: string | null;
   defaultSpeed: number;
   defaultHeading: number;
+  config: MissionConfig;
+  pois: POI[];
   onWaypointChange?: (id: string, changes: Partial<Waypoint>) => void;
   onSelectWaypoint?: (id: string) => void;
 }
@@ -109,6 +112,8 @@ export function WaypointLayer({
   selectedWaypointId,
   defaultSpeed,
   defaultHeading,
+  config,
+  pois,
   onWaypointChange,
   onSelectWaypoint,
 }: Props) {
@@ -124,7 +129,8 @@ export function WaypointLayer({
 
     waypoints.forEach((wp, index) => {
       const movementHeading = getMovementHeading(waypoints, index, defaultHeading);
-      const cameraHeading = normalizeAngle(wp.heading ?? defaultHeading);
+      const orientation = resolveWaypointOrientation(wp, config, pois);
+      const cameraHeading = normalizeAngle(orientation.heading);
       const speed = wp.speed ?? defaultSpeed;
 
       const marker = L.marker([wp.lat, wp.lng], {
@@ -146,14 +152,14 @@ export function WaypointLayer({
         onSelectWaypoint?.(wp.id);
       });
 
-      marker.bindTooltip(`#${index + 1} — ${wp.altitude}m`, { direction: 'top', opacity: 0.9 });
+      marker.bindTooltip(`#${index + 1} — ${wp.altitude}m — cam ${orientation.gimbalPitch.toFixed(1)}deg`, { direction: 'top', opacity: 0.9 });
       layerRef.current?.addLayer(marker);
     });
 
     return () => {
       layerRef.current?.clearLayers();
     };
-  }, [map, waypoints, selectedWaypointId, defaultSpeed, defaultHeading, onWaypointChange, onSelectWaypoint]);
+  }, [map, waypoints, selectedWaypointId, defaultSpeed, defaultHeading, config, pois, onWaypointChange, onSelectWaypoint]);
 
   return null;
 }

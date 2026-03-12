@@ -80,16 +80,16 @@ export default function App() {
   );
 
   const handleExportKmz = useCallback(() => {
-    exportKmz(mission.waypoints, mission.config);
-  }, [mission.waypoints, mission.config]);
+    exportKmz(mission.waypoints, mission.config, poiManager.pois);
+  }, [mission.waypoints, mission.config, poiManager.pois]);
 
   const handleExportGpx = useCallback(() => {
-    exportGpx(mission.waypoints, mission.config);
-  }, [mission.waypoints, mission.config]);
+    exportGpx(mission.waypoints, mission.config, poiManager.pois);
+  }, [mission.waypoints, mission.config, poiManager.pois]);
 
   const handleExportJson = useCallback(() => {
-    exportJson(mission.waypoints, mission.config, mission.stats, mission.zones);
-  }, [mission.waypoints, mission.config, mission.stats, mission.zones]);
+    exportJson(mission.waypoints, mission.config, mission.stats, mission.zones, poiManager.pois);
+  }, [mission.waypoints, mission.config, mission.stats, mission.zones, poiManager.pois]);
 
   const handleImportKmz = useCallback(async (file: File) => {
     try {
@@ -249,6 +249,17 @@ export default function App() {
     }
   }, [selectedWaypointId, mission.waypoints]);
 
+  useEffect(() => {
+    if (mission.config.waypointOrientationMode !== 'poi' || !mission.config.waypointOrientationPoiId) {
+      return;
+    }
+
+    const hasPoi = poiManager.pois.some(poi => poi.id === mission.config.waypointOrientationPoiId);
+    if (!hasPoi) {
+      mission.updateConfig({ waypointOrientationMode: 'manual', waypointOrientationPoiId: undefined });
+    }
+  }, [mission.config.waypointOrientationMode, mission.config.waypointOrientationPoiId, mission.updateConfig, poiManager.pois]);
+
   const toWaypoints = useCallback((points: WaypointSeed[]): Waypoint[] => {
     return points.map((p, i) => ({
       id: `wp-extra-${Date.now()}-${i}`,
@@ -311,6 +322,7 @@ export default function App() {
     selectedWaypointId,
     onSelectWaypoint: setSelectedWaypointId,
     poiManager,
+    onSetWaypointOrientationPoi: (poiId: string) => mission.updateConfig({ waypointOrientationMode: 'poi', waypointOrientationPoiId: poiId }),
     layerVisibility,
     onLayerVisibilityChange: (layer: keyof LayerVisibilityConfig) =>
       setLayerVisibility(prev => ({ ...prev, [layer]: !prev[layer] })),
@@ -395,6 +407,8 @@ export default function App() {
               selectedWaypointId={selectedWaypointId}
               defaultSpeed={mission.config.speed}
               defaultHeading={mission.config.direction}
+              config={mission.config}
+              pois={poiManager.pois}
               onWaypointChange={mission.updateWaypoint}
               onSelectWaypoint={setSelectedWaypointId}
             />
