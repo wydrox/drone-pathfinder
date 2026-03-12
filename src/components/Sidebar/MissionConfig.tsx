@@ -1,9 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
-import type { MissionConfig as MConfig, MissionStats } from '@/types/mission';
+import type { MissionConfig as MConfig, MissionStats, POI } from '@/types/mission';
 
 const DRONES = ['DJI Mini 4 Pro', 'DJI Mini 5 Pro', 'DJI Mavic 4 Pro', 'DJI Air 3', 'DJI Air 3S', 'DJI Mavic 3', 'DJI Mavic 3 Pro'];
 
-interface Props { config: MConfig; onChange: (p: Partial<MConfig>) => void; stats: MissionStats; }
+interface Props {
+  config: MConfig;
+  onChange: (p: Partial<MConfig>) => void;
+  stats: MissionStats;
+  pois: POI[];
+}
 
 function InfoTooltip({ text }: { text: string }) {
   const [show, setShow] = useState(false);
@@ -143,7 +148,9 @@ function ToggleRow({ label, value, onChange, info }: { label: string; value: boo
   );
 }
 
-export function MissionConfig({ config, onChange, stats }: Props) {
+export function MissionConfig({ config, onChange, stats, pois }: Props) {
+  const poiSelectionEnabled = pois.length > 0;
+
   return (
     <div>
       <div style={{ 
@@ -287,6 +294,103 @@ export function MissionConfig({ config, onChange, stats }: Props) {
         onChange={v => onChange({ cameraAngle: v })}
         info="Gimbal pitch. -90° points straight down for mapping; higher angles for oblique capture."
       />
+
+      <div style={{
+        fontFamily: 'var(--font-mono)',
+        fontSize: 10,
+        color: 'var(--text-dim)',
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em',
+        marginBottom: 16,
+        marginTop: 24,
+        borderBottom: '1px solid var(--border-subtle)',
+        paddingBottom: 8,
+      }}>
+        Waypoint Orientation
+      </div>
+
+      <Row
+        label="Orientation Mode"
+        info="Manual keeps the configured camera direction and angle. Focus POI derives waypoint heading and gimbal pitch from the selected point of interest."
+      >
+        <div style={{ display: 'flex', gap: 0 }}>
+          <button
+            onClick={() => onChange({ waypointOrientationMode: 'manual', waypointOrientationPoiId: undefined })}
+            style={{
+              flex: 1,
+              padding: '10px 0',
+              fontSize: 12,
+              cursor: 'pointer',
+              background: config.waypointOrientationMode === 'manual' ? 'var(--bg-card)' : 'transparent',
+              border: `1px solid ${config.waypointOrientationMode === 'manual' ? 'var(--text-primary)' : 'var(--border)'}`,
+              color: config.waypointOrientationMode === 'manual' ? 'var(--text-primary)' : 'var(--text-muted)',
+              fontWeight: config.waypointOrientationMode === 'manual' ? 600 : 400,
+              fontFamily: 'var(--font-mono)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+            }}
+          >
+            Manual
+          </button>
+          <button
+            onClick={() => {
+              if (!poiSelectionEnabled) return;
+              onChange({
+                waypointOrientationMode: 'poi',
+                waypointOrientationPoiId: config.waypointOrientationPoiId ?? pois[0]?.id,
+              });
+            }}
+            disabled={!poiSelectionEnabled}
+            style={{
+              flex: 1,
+              padding: '10px 0',
+              fontSize: 12,
+              cursor: poiSelectionEnabled ? 'pointer' : 'not-allowed',
+              background: config.waypointOrientationMode === 'poi' ? 'var(--bg-card)' : 'transparent',
+              border: `1px solid ${config.waypointOrientationMode === 'poi' ? 'var(--text-primary)' : 'var(--border)'}`,
+              color: config.waypointOrientationMode === 'poi' ? 'var(--text-primary)' : 'var(--text-muted)',
+              fontWeight: config.waypointOrientationMode === 'poi' ? 600 : 400,
+              fontFamily: 'var(--font-mono)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              opacity: poiSelectionEnabled ? 1 : 0.45,
+            }}
+          >
+            Focus POI
+          </button>
+        </div>
+      </Row>
+
+      {config.waypointOrientationMode === 'poi' && (
+        <Row label="Target POI" info="Each waypoint resolves heading toward this POI, and the camera pitch is derived from waypoint altitude vs POI altitude.">
+          {poiSelectionEnabled ? (
+            <select
+              value={config.waypointOrientationPoiId ?? pois[0]?.id ?? ''}
+              onChange={e => onChange({ waypointOrientationPoiId: e.target.value, waypointOrientationMode: 'poi' })}
+              style={{
+                width: '100%',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border)',
+                color: 'var(--text-primary)',
+                padding: '10px 12px',
+                fontSize: 12,
+                fontFamily: 'var(--font-mono)',
+                cursor: 'pointer',
+              }}
+            >
+              {pois.map(poi => (
+                <option key={poi.id} value={poi.id}>
+                  {poi.name} - {poi.altitude}m
+                </option>
+              ))}
+            </select>
+          ) : (
+            <div style={{ color: 'var(--warning)', fontSize: 12 }}>
+              Add at least one POI in the POIs tab before enabling POI focus mode.
+            </div>
+          )}
+        </Row>
+      )}
 
       <div style={{
         fontFamily: 'var(--font-mono)',

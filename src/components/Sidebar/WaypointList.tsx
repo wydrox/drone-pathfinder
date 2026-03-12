@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import type { Waypoint } from '@/types/mission';
+import type { MissionConfig, POI, Waypoint } from '@/types/mission';
+import { getOrientationPoi, resolveWaypointOrientation } from '@/lib/waypointOrientation';
 
 interface Props {
   waypoints: Waypoint[];
@@ -7,6 +8,8 @@ interface Props {
   onRemove: (id: string) => void;
   selectedWaypointId: string | null;
   onSelect: (id: string | null) => void;
+  config: MissionConfig;
+  pois: POI[];
 }
 
 function toNumber(value: string): number | null {
@@ -15,8 +18,9 @@ function toNumber(value: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-export function WaypointList({ waypoints, onUpdate, onRemove, selectedWaypointId, onSelect }: Props) {
+export function WaypointList({ waypoints, onUpdate, onRemove, selectedWaypointId, onSelect, config, pois }: Props) {
   const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const orientationPoi = getOrientationPoi(config, pois);
 
   useEffect(() => {
     if (!selectedWaypointId) return;
@@ -60,6 +64,8 @@ export function WaypointList({ waypoints, onUpdate, onRemove, selectedWaypointId
 
       {waypoints.map((wp, i) => {
         const isSelected = selectedWaypointId === wp.id;
+        const orientation = resolveWaypointOrientation(wp, config, pois);
+        const isPoiDriven = orientationPoi !== null;
         return (
           <div
             key={wp.id}
@@ -184,15 +190,19 @@ export function WaypointList({ waypoints, onUpdate, onRemove, selectedWaypointId
                 </label>
 
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <span style={{ fontSize: 10, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>Camera dir (deg)</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
+                    {isPoiDriven ? 'Camera dir (POI)' : 'Camera dir (deg)'}
+                  </span>
                   <input
                     type="number"
                     min={0}
                     max={359}
                     step={1}
-                    value={wp.heading ?? ''}
+                    value={isPoiDriven ? orientation.heading.toFixed(1) : (wp.heading ?? '')}
+                    disabled={isPoiDriven}
                     onClick={(e) => e.stopPropagation()}
                     onChange={(e) => {
+                      if (isPoiDriven) return;
                       const parsed = toNumber(e.target.value);
                       const normalized = parsed === null ? undefined : ((parsed % 360) + 360) % 360;
                       onUpdate(wp.id, { heading: normalized });
@@ -205,6 +215,34 @@ export function WaypointList({ waypoints, onUpdate, onRemove, selectedWaypointId
                       padding: '5px 6px',
                       fontSize: 11,
                       fontFamily: 'var(--font-mono)',
+                      opacity: isPoiDriven ? 0.7 : 1,
+                    }}
+                  />
+                  {isPoiDriven && orientation.poi && (
+                    <span style={{ fontSize: 10, color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>
+                      Derived from {orientation.poi.name}
+                    </span>
+                  )}
+                </label>
+
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <span style={{ fontSize: 10, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
+                    {isPoiDriven ? 'Gimbal pitch (POI)' : 'Gimbal pitch'}
+                  </span>
+                  <input
+                    type="number"
+                    value={orientation.gimbalPitch.toFixed(1)}
+                    readOnly
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      width: '100%',
+                      background: 'var(--bg-base)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-primary)',
+                      padding: '5px 6px',
+                      fontSize: 11,
+                      fontFamily: 'var(--font-mono)',
+                      opacity: isPoiDriven ? 1 : 0.7,
                     }}
                   />
                 </label>

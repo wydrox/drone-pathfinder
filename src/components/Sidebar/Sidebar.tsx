@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { MissionConfig as MConfig, MissionStats, Waypoint, POI, MissionV2, LatLng, WaypointSeed } from '@/types/mission';
 import { MissionConfig } from './MissionConfig';
 import { WaypointList } from './WaypointList';
@@ -31,6 +31,7 @@ interface Props {
     addPOI: (poi: Omit<POI, 'id'>) => POI;
     removePOI: (id: string) => void;
   };
+  onSetWaypointOrientationPoi?: (poiId: string) => void;
   layerVisibility: LayerVisibilityConfig;
   onLayerVisibilityChange: (layer: keyof LayerVisibilityConfig) => void;
   onGenerateVideoWaypoints?: (waypoints: WaypointSeed[]) => void;
@@ -52,23 +53,18 @@ export function Sidebar(props: Props) {
   const [tab, setTab] = useState<Tab>('config');
   const [showHelp, setShowHelp] = useState(true);
 
-  useEffect(() => {
-    if (props.selectedWaypointId) {
-      setTab('waypoints');
-    }
-  }, [props.selectedWaypointId]);
-
   const { isMobile = false } = props;
+  const activeTab: Tab = props.selectedWaypointId ? 'waypoints' : tab;
 
   const tabStyle = (t: Tab) => ({
     padding: isMobile ? '10px 4px' : '8px 6px',
     textAlign: 'center' as const,
     fontSize: isMobile ? 10 : 9,
-    fontWeight: tab === t ? 600 : 400,
-    color: tab === t ? 'var(--text-primary)' : 'var(--text-muted)',
-    background: tab === t ? 'var(--bg-card)' : 'transparent',
+    fontWeight: activeTab === t ? 600 : 400,
+    color: activeTab === t ? 'var(--text-primary)' : 'var(--text-muted)',
+    background: activeTab === t ? 'var(--bg-card)' : 'transparent',
     border: 'none',
-    borderBottom: `2px solid ${tab === t ? 'var(--text-primary)' : 'transparent'}`,
+    borderBottom: `2px solid ${activeTab === t ? 'var(--text-primary)' : 'transparent'}`,
     cursor: 'pointer',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.06em',
@@ -134,7 +130,7 @@ export function Sidebar(props: Props) {
         </div>
       </div>
 
-      {showHelp && tab === 'config' && (
+      {showHelp && activeTab === 'config' && (
         <div style={{
           background: 'var(--bg-card)',
           borderBottom: '1px solid var(--border)',
@@ -194,7 +190,7 @@ export function Sidebar(props: Props) {
         padding: 16,
         background: 'var(--bg-surface)',
       }}>
-        {tab === 'config' && (
+        {activeTab === 'config' && (
           <>
             <div style={{ marginBottom: 16 }}>
               <label style={{ fontSize: 12, color: 'var(--text-dim)', display: 'block', marginBottom: 8 }}>Map Style</label>
@@ -220,21 +216,24 @@ export function Sidebar(props: Props) {
               config={props.config}
               onChange={props.onConfigChange}
               stats={props.stats}
+              pois={props.poiManager.pois}
             />
           </>
         )}
         
-        {tab === 'waypoints' && (
+        {activeTab === 'waypoints' && (
           <WaypointList
             waypoints={props.waypoints}
             onUpdate={props.onUpdateWaypoint}
             onRemove={props.onRemoveWaypoint}
             selectedWaypointId={props.selectedWaypointId}
             onSelect={props.onSelectWaypoint}
+            config={props.config}
+            pois={props.poiManager.pois}
           />
         )}
         
-        {tab === 'pois' && (
+        {activeTab === 'pois' && (
           <POIPanel
             pois={props.poiManager.pois}
             onAddPOI={props.poiManager.addPOI}
@@ -243,17 +242,19 @@ export function Sidebar(props: Props) {
             onRequestMapPoiLocation={props.onRequestMapPoiLocation}
             mapPoiLocation={props.mapPoiLocation}
             isPickingMapPoiLocation={props.isPickingMapPoiLocation}
+            activeOrientationPoiId={props.config.waypointOrientationPoiId}
+            onSetOrientationPoi={props.onSetWaypointOrientationPoi}
           />
         )}
         
-        {tab === 'layers' && (
+        {activeTab === 'layers' && (
           <LayerPanel
             visibility={props.layerVisibility}
             onToggle={props.onLayerVisibilityChange}
           />
         )}
         
-        {tab === 'video' && props.onGenerateVideoWaypoints && (
+        {activeTab === 'video' && props.onGenerateVideoWaypoints && (
           <VideoMissionPanel
             onGenerateWaypoints={props.onGenerateVideoWaypoints}
             onSetCenterFromMap={props.onSetVideoCenter}
@@ -262,7 +263,7 @@ export function Sidebar(props: Props) {
           />
         )}
         
-        {tab === 'stages' && (
+        {activeTab === 'stages' && (
           <StageManager
             mission={props.missionV2}
             config={props.config}
@@ -270,13 +271,13 @@ export function Sidebar(props: Props) {
           />
         )}
         
-        {tab === 'offline' && (
+        {activeTab === 'offline' && (
           <OfflinePanel
             currentCenter={props.mapCenter}
           />
         )}
         
-        {tab === 'export' && (
+        {activeTab === 'export' && (
           <ExportPanel
             onExportKmz={props.onExportKmz}
             onExportGpx={props.onExportGpx}

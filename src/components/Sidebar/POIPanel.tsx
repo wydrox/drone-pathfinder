@@ -12,6 +12,8 @@ interface Props {
   onAddPOI: (poi: Omit<POI, 'id'>) => POI;
   onRemovePOI: (id: string) => void;
   onGenerateWaypoints?: (waypoints: WaypointSeed[]) => void;
+  onSetOrientationPoi?: (poiId: string) => void;
+  activeOrientationPoiId?: string;
   onRequestMapPoiLocation?: () => void;
   mapPoiLocation?: LatLng | null;
   isPickingMapPoiLocation?: boolean;
@@ -22,6 +24,8 @@ export function POIPanel({
   onAddPOI,
   onRemovePOI,
   onGenerateWaypoints,
+  onSetOrientationPoi,
+  activeOrientationPoiId,
   onRequestMapPoiLocation,
   mapPoiLocation,
   isPickingMapPoiLocation = false,
@@ -33,16 +37,23 @@ export function POIPanel({
   const [ringCount, setRingCount] = useState(3);
   const [baseRadius, setBaseRadius] = useState(12);
   const [overlap, setOverlap] = useState(75);
+  const [poiAltitude, setPoiAltitude] = useState(40);
   const [altitude, setAltitude] = useState(40);
   const [photoInterval, setPhotoInterval] = useState(4);
   const [speed, setSpeed] = useState(5);
   const [levelCount, setLevelCount] = useState(3);
   const [levelStep, setLevelStep] = useState(10);
+  const isPoiFormValid = Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)) && Number.isFinite(poiAltitude);
 
   useEffect(() => {
     if (!mapPoiLocation) return;
-    setLat(mapPoiLocation.lat.toFixed(6));
-    setLng(mapPoiLocation.lng.toFixed(6));
+
+    const frame = window.requestAnimationFrame(() => {
+      setLat(mapPoiLocation.lat.toFixed(6));
+      setLng(mapPoiLocation.lng.toFixed(6));
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [mapPoiLocation]);
 
   const addPoi = () => {
@@ -53,7 +64,7 @@ export function POIPanel({
       name,
       lat: latNum,
       lng: lngNum,
-      altitude,
+      altitude: poiAltitude,
       category: 'target',
       radiusMeters: baseRadius,
     });
@@ -120,14 +131,15 @@ export function POIPanel({
             {isPickingMapPoiLocation ? 'Click on map...' : 'Add POI'}
           </button>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
           <input value={lat} onChange={e => setLat(e.target.value)} placeholder="lat" style={inputStyle} />
           <input value={lng} onChange={e => setLng(e.target.value)} placeholder="lng" style={inputStyle} />
+          <input value={poiAltitude} onChange={e => setPoiAltitude(Number(e.target.value))} type="number" min={-200} max={1000} placeholder="alt m" style={inputStyle} />
         </div>
         <button
           onClick={addPoi}
-          style={{ ...buttonStyle, width: '100%', opacity: Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)) ? 1 : 0.5 }}
-          disabled={!Number.isFinite(Number(lat)) || !Number.isFinite(Number(lng))}
+          style={{ ...buttonStyle, width: '100%', opacity: isPoiFormValid ? 1 : 0.5 }}
+          disabled={!isPoiFormValid}
         >
           Save POI
         </button>
@@ -140,15 +152,28 @@ export function POIPanel({
           {pois.map(poi => {
             const c = coverage(poi);
             const isOpen = !!expanded[poi.id];
+            const isOrientationTarget = activeOrientationPoiId === poi.id;
             return (
               <div key={poi.id} style={{ background: '#1e2130', borderRadius: 8, padding: '10px 12px', border: '1px solid #2a2f45' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <div style={{ fontSize: 13, color: '#e8eaf0' }}>{poi.name}</div>
                     <div style={{ fontSize: 11, color: '#6b7280' }}>{poi.lat.toFixed(5)}, {poi.lng.toFixed(5)}</div>
+                    <div style={{ fontSize: 11, color: '#6b7280' }}>Alt {poi.altitude}m</div>
                     <div style={{ fontSize: 11, color: c.score >= 80 ? '#22c55e' : '#f59e0b' }}>Coverage {Math.round(c.score)}%</div>
+                    {isOrientationTarget && <div style={{ fontSize: 11, color: 'var(--accent)', marginTop: 2 }}>Waypoint focus target</div>}
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      onClick={() => onSetOrientationPoi?.(poi.id)}
+                      style={{
+                        ...miniButtonStyle,
+                        borderColor: isOrientationTarget ? 'var(--accent)' : 'var(--border)',
+                        color: isOrientationTarget ? 'var(--accent)' : 'var(--text-muted)',
+                      }}
+                    >
+                      {isOrientationTarget ? 'Focused' : 'Focus WPTS'}
+                    </button>
                     <button onClick={() => setExpanded(prev => ({ ...prev, [poi.id]: !prev[poi.id] }))} style={miniButtonStyle}>{isOpen ? 'Hide' : '360'}</button>
                     <button onClick={() => onRemovePOI(poi.id)} style={miniButtonStyle}>✕</button>
                   </div>
