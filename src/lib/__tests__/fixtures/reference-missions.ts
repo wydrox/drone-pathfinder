@@ -1,4 +1,4 @@
-import type { Mission, Zone, Waypoint, MissionConfig, MissionStats } from '@/types/mission';
+import type { Mission, MissionConfig } from '@/types/mission';
 
 export const DEFAULT_CONFIG: MissionConfig = {
   altitude: 80,
@@ -6,6 +6,7 @@ export const DEFAULT_CONFIG: MissionConfig = {
   overlap: 70,
   direction: 0,
   cameraAngle: -90,
+  waypointOrientationMode: 'manual',
   travelAxis: 'EW',
   photoCapture: true,
   terrainAware: false,
@@ -97,6 +98,7 @@ export const customConfigMission: Mission = {
     overlap: 85,
     direction: 45,
     cameraAngle: -45,
+    waypointOrientationMode: 'manual',
     travelAxis: 'NS',
     photoCapture: false,
     terrainAware: false,
