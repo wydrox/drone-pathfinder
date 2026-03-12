@@ -14,9 +14,34 @@ const FEATURE_FLAGS = {
 
 const DEFAULT_CONFIG: MissionConfig = {
   altitude: 80, speed: 8, overlap: 70,
-  direction: 0, cameraAngle: -90, travelAxis: 'EW',
+  direction: 0, cameraAngle: -90, waypointOrientationMode: 'manual', travelAxis: 'EW',
   photoCapture: true, terrainAware: false, droneModel: 'DJI Mini 4 Pro',
 };
+
+const NON_DESTRUCTIVE_CONFIG_KEYS = new Set<keyof MissionConfig>([
+  'cameraAngle',
+  'droneModel',
+  'terrainAware',
+  'waypointOrientationMode',
+  'waypointOrientationPoiId',
+]);
+
+function calcPathStats(waypoints: Waypoint[], speed: number): Pick<MissionStats, 'waypointCount' | 'estimatedTimeSec' | 'totalDistanceM'> {
+  let totalDistanceM = 0;
+  for (let i = 1; i < waypoints.length; i++) {
+    const prev = waypoints[i - 1];
+    const curr = waypoints[i];
+    const dx = (curr.lng - prev.lng) * 111320 * Math.cos(((curr.lat + prev.lat) * Math.PI) / 360);
+    const dy = (curr.lat - prev.lat) * 111320;
+    totalDistanceM += Math.sqrt(dx * dx + dy * dy);
+  }
+
+  return {
+    waypointCount: waypoints.length,
+    totalDistanceM,
+    estimatedTimeSec: speed > 0 ? totalDistanceM / speed : 0,
+  };
+}
 
 interface MissionState {
   config: MissionConfig;
@@ -140,6 +165,15 @@ export function useMission() {
   const updateConfig = useCallback((partial: Partial<MissionConfig>) => {
     saveState(prev => {
       const newConfig = { ...prev.config, ...partial };
+      const partialKeys = Object.keys(partial) as (keyof MissionConfig)[];
+
+      if (partialKeys.length > 0 && partialKeys.every(key => NON_DESTRUCTIVE_CONFIG_KEYS.has(key))) {
+        return {
+          ...prev,
+          config: newConfig,
+        };
+      }
+
       const { waypoints: newWaypoints, stats: newStats } = regenerateWaypoints(prev.zones, newConfig);
       return {
         ...prev,
@@ -190,36 +224,39 @@ export function useMission() {
       const start = prev.waypoints.length;
       const normalized = wps.map((wp, i) => ({ ...wp, id: wp.id || `wp-${start + i}`, index: start + i }));
       const newWaypoints = [...prev.waypoints, ...normalized];
+      const pathStats = calcPathStats(newWaypoints, prev.config.speed);
       return {
         ...prev,
         waypoints: newWaypoints,
-        stats: { ...prev.stats, waypointCount: newWaypoints.length },
+        stats: { ...prev.stats, ...pathStats },
       };
     });
   }, [saveState]);
 
   const replaceWaypoints = useCallback((wps: Waypoint[]) => {
-    saveState(prev => ({
-      ...prev,
-      waypoints: wps.map((wp, i) => ({ ...wp, index: i })),
-      stats: { ...prev.stats, waypointCount: wps.length },
-    }));
+    saveState(prev => {
+      const reindexed = wps.map((wp, i) => ({ ...wp, index: i }));
+      const pathStats = calcPathStats(reindexed, prev.config.speed);
+      return {
+        ...prev,
+        waypoints: reindexed,
+        stats: { ...prev.stats, ...pathStats },
+      };
+    });
   }, [saveState]);
 
   const setImportedWaypoints = useCallback((wps: Waypoint[] | WaypointV2[]) => {
     const first = wps[0];
     const isV2 = !!first && 'actions' in first;
-    saveState(prev => ({
-      ...prev,
-      schemaVersion: isV2 ? '2.0' : '1.0',
-      waypoints: isV2 
+    saveState(prev => {
+      const normalizedWps: Waypoint[] = isV2
         ? (wps as WaypointV2[]).map(wp => ({
             id: wp.id,
             lat: wp.lat,
             lng: wp.lng,
             altitude: wp.altitude,
             index: wp.index,
-            action: wp.actions.some(a => a.type === 'photo') ? 'photo' : 'none',
+            action: (wp.actions.some(a => a.type === 'photo') ? 'photo' : 'none') as 'photo' | 'none',
             speed: wp.speed,
             heading: wp.heading,
           }))
@@ -227,9 +264,15 @@ export function useMission() {
             ...wp,
             speed: wp.speed ?? prev.config.speed,
             heading: wp.heading ?? prev.config.direction,
-          })),
-      stats: { waypointCount: wps.length, areaSqm: 0, estimatedTimeSec: 0 },
-    }));
+          }));
+      const pathStats = calcPathStats(normalizedWps, prev.config.speed);
+      return {
+        ...prev,
+        schemaVersion: isV2 ? '2.0' : '1.0',
+        waypoints: normalizedWps,
+        stats: { areaSqm: 0, ...pathStats },
+      };
+    });
   }, [saveState]);
 
   return {
